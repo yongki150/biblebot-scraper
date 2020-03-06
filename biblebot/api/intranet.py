@@ -262,8 +262,8 @@ class Timetable(ISemesterFetcher, IParser):
     @staticmethod
     def _parse_contents(td: str, response: Response) -> Tuple[str, str, str, str]:
         matching = re.match(
-            r"(.+)?\(([^(]*)?\)(\d{2}:\d{2})\s*~\s(\d{2}:\d{2})", td
-        ) or re.match(r"(.+)?()(\d{2}:\d{2})\s*~\s(\d{2}:\d{2})", td)
+            r"(.+)?\(([^(]*)?\)(\d{2}:\d{2})\s*~\s*([0-9:]{,5})", td
+        ) or re.match(r"(.+)?()(\d{2}:\d{2})\s*~\s*([0-9:]{,5})", td)
         if not matching:
             ParsingError("시간표 상세정보를 해석할 수 없습니다.", response)
         return matching.groups()

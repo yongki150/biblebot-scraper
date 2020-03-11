@@ -145,6 +145,18 @@ class Login(ILoginFetcher, IParser):
 class Profile(IGeneralFetcher, IParser):
     URL: str = DOMAIN_NAME + "/user/user_edit.php?lang=ko"
 
+    @staticmethod
+    def validate_name(name: str) -> bool:
+        return bool(re.search(r"^[가-힣]{2,}$", name))
+
+    @staticmethod
+    def validate_sid(univ_id: str) -> bool:
+        return bool(re.search(r"^[a-zA-Z]{,1}\d{3,9}$", univ_id))
+
+    @staticmethod
+    def validate_major(major: str) -> bool:
+        return bool(re.search(r"^[가-힣]{3,17}$", major))
+
     @classmethod
     async def fetch(
         cls,
@@ -168,7 +180,11 @@ class Profile(IGeneralFetcher, IParser):
         if not sid_tag:
             raise ParsingError("학번을 탐색할 수 없습니다.", response)
 
-        return sid_tag.get_text(strip=True)
+        sid: str = sid_tag.get_text(strip=True)
+        if not cls.validate_sid(sid):
+            raise ParsingError("올바르지 않은 학번입니다.", response)
+
+        return sid
 
     @classmethod
     def _parse_name(cls, response: Response) -> str:
@@ -177,12 +193,15 @@ class Profile(IGeneralFetcher, IParser):
         if not name_container:
             raise ParsingError("성명 컨테이너를 찾을 수 없습니다.", response)
 
-        name_tag = name_container.find("input")
+        name_tag: Tag = name_container.find("input")
         if not name_tag:
             raise ParsingError("성명을 탐색할 수 없습니다.", response)
 
-        name = name_tag.get("value") or ""
-        return name.strip()
+        name = name_tag.get("value", "").strip()
+        if not cls.validate_name(name):
+            raise ParsingError("올바르지 않은 이름입니다.", response)
+
+        return name
 
     @classmethod
     def _parse_major(cls, response: Response) -> str:
@@ -195,8 +214,11 @@ class Profile(IGeneralFetcher, IParser):
         if not major_tag:
             raise ParsingError("전공을 탐색할 수 없습니다.", soup.original_markup)
 
-        major = major_tag.get("value") or ""
-        return major.strip()
+        major = major_tag.get("value", "").strip()
+        if not cls.validate_major(major):
+            raise ParsingError("올바르지 않은 학과입니다.", response)
+
+        return major
 
     @classmethod
     @_ParserPrecondition

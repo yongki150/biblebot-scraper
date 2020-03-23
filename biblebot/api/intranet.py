@@ -260,7 +260,7 @@ class Timetable(ISemesterFetcher, IParser):
         )
 
     @staticmethod
-    def _parse_contents(td: str, response: Response) -> Tuple[str, str, str, str]:
+    def _parse_contents(td: str, response: Response) -> Tuple:
         matching = re.match(
             r"(.+)?\(([^(]*)?\)(\d{2}:\d{2})\s*~\s*([0-9:]{,5})", td
         ) or re.match(r"(.+)?()(\d{2}:\d{2})\s*~\s*([0-9:]{,5})", td)
@@ -273,15 +273,15 @@ class Timetable(ISemesterFetcher, IParser):
         soup = response.soup
         thead = soup.find("thead", attrs={"class": "mhead"})
         tbody = soup.find("tbody", attrs={"class": "mbody"})
-
+        result = [[], [], [], [], []]
         head, body = parse_table(response, thead, tbody)
-        body = [
-            cls._parse_contents(block, response)
-            for row in body
-            for block in row
-            if block
-        ]
-        return head, body
+
+        for row in body:
+            for i, each in enumerate(row):
+                if each:
+                    result[i].append(cls._parse_contents(each, response))
+
+        return head, result
 
     @classmethod
     def parse(cls, response: Response) -> APIResponseType:

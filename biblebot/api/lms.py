@@ -193,7 +193,7 @@ class Profile(IGeneralFetcher, IParser):
         if not name_container:
             raise ParsingError("성명 컨테이너를 찾을 수 없습니다.", response)
 
-        name_tag: Tag = name_container.find("input")
+        name_tag = name_container.find("input")
         if not name_tag:
             raise ParsingError("성명을 탐색할 수 없습니다.", response)
 

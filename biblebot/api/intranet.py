@@ -106,6 +106,7 @@ async def _post_with_semester(
     ):
         body = extract_hidden_tags(response.soup)
         body[_SEMESTER_KEY] = semester
+        body["ctl00$ContentPlaceHolder1$hidActionMode"] = "S"
         response = await HTTPClient.connector.post(
             url, body=body, cookies=cookies, headers=headers, timeout=timeout
         )

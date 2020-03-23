@@ -16,10 +16,8 @@
   
   
 ## Installation
-현재 테스트 배포 중입니다.
-
 ```
-$ pip install -i https://test.pypi.org/simple/ 'biblebot[http]' --extra-index-url https://pypi.org/simple
+$ pip install 'biblebot[http]'
 ```
 
 ## Dependencies

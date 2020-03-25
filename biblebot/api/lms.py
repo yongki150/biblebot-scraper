@@ -87,7 +87,6 @@ def _extract_semester(response: Response) -> SemesterData:
             for year in year_selectables
             for semester in semester_selectables
         ]
-        selectable.remove(selected)
     return SemesterData(selected=selected, selectable=selectable)
 
 

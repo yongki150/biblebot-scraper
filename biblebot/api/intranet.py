@@ -69,7 +69,7 @@ def _extract_semester(response: Response) -> SemesterData:
 
     try:
         selectables: List[str] = [
-            opt.attrs["value"] for opt in select_tag.find_all("option", selected=False)
+            opt.attrs["value"] for opt in select_tag.find_all("option")
         ]
         selected: str = select_tag.find("option", selected=True).attrs["value"]
     except (KeyError, AttributeError):

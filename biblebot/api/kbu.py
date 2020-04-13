@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 import datetime
 import unicodedata
 
@@ -77,13 +77,14 @@ class NoticeList(IParser):
     @classmethod
     async def fetch(
         cls,
-        page: str = "1",
+        page: Union[int, str] = 1,
         search_keyword: Optional[str] = None,
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
     ) -> Response:
-        url = cls.URL + page
+        page = int(page)
+        url = cls.URL + str(page)
         if search_keyword:
             query = {"keyword": search_keyword}
             query_string = urlencode(query)

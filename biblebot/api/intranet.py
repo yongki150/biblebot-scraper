@@ -84,6 +84,7 @@ async def _post_with_semester(
     *,
     headers: Optional[Dict[str, str]] = None,
     timeout: Optional[float] = None,
+    **kwargs,
 ) -> Response:
     """ 인트라넷에서 특정 학기의 정보 조회를 위한 메서드
 
@@ -93,7 +94,7 @@ async def _post_with_semester(
     2. POST 요청, hidden-tag와 학기를 body에 담아 전송한다.
     """
     response = await HTTPClient.connector.get(
-        url, cookies=cookies, headers=headers, timeout=timeout
+        url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
     )
     if _SessionExpiredChecker.is_blocking(response):
         return response
@@ -108,7 +109,7 @@ async def _post_with_semester(
         body[_SEMESTER_KEY] = semester
         body["ctl00$ContentPlaceHolder1$hidActionMode"] = "S"
         response = await HTTPClient.connector.post(
-            url, body=body, cookies=cookies, headers=headers, timeout=timeout
+            url, body=body, cookies=cookies, headers=headers, timeout=timeout, **kwargs
         )
         semester_info: SemesterData = _extract_semester(response)
     response.etc["semester"] = semester_info
@@ -126,10 +127,11 @@ class Login(ILoginFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         form = {"Txt_1": user_id, "Txt_2": user_pw, "use_type": "2"}
         return await HTTPClient.connector.post(
-            cls.URL, headers=headers, body=form, timeout=timeout
+            cls.URL, headers=headers, body=form, timeout=timeout, **kwargs
         )
 
     @classmethod
@@ -164,12 +166,13 @@ class StudentPhoto(IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         query: Dict[str, str] = {"schNo": sid}
         query_string = urlencode(query)
         url = f"{cls.URL}?{query_string}"
         return await HTTPClient.connector.post(
-            url, cookies=cookies, headers=headers, timeout=timeout
+            url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
         )
 
     @classmethod
@@ -198,9 +201,10 @@ class Chapel(ISemesterFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await _post_with_semester(
-            cls.URL, cookies, semester, headers=headers, timeout=timeout
+            cls.URL, cookies, semester, headers=headers, timeout=timeout, **kwargs
         )
 
     @classmethod
@@ -255,9 +259,10 @@ class Timetable(ISemesterFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await _post_with_semester(
-            cls.URL, cookies, semester, headers=headers, timeout=timeout
+            cls.URL, cookies, semester, headers=headers, timeout=timeout, **kwargs
         )
 
     @staticmethod
@@ -309,9 +314,10 @@ class Course(ISemesterFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await _post_with_semester(
-            cls.URL, cookies, semester, headers=headers, timeout=timeout
+            cls.URL, cookies, semester, headers=headers, timeout=timeout, **kwargs
         )
 
     @classmethod

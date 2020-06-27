@@ -38,8 +38,11 @@ class NoticeArticle:
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
-        return await HTTPClient.connector.get(url, headers=headers, timeout=timeout)
+        return await HTTPClient.connector.get(
+            url, headers=headers, timeout=timeout, **kwargs
+        )
 
     @classmethod
     def parse(cls, response: Response) -> NoticeData:
@@ -82,6 +85,7 @@ class NoticeList(IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         page = int(page)
         url = cls.URL + str(page)
@@ -89,7 +93,9 @@ class NoticeList(IParser):
             query = {"keyword": search_keyword}
             query_string = urlencode(query)
             url = f"{url}?{query_string}"
-        response = await HTTPClient.connector.get(url, headers=headers, timeout=timeout)
+        response = await HTTPClient.connector.get(
+            url, headers=headers, timeout=timeout, **kwargs
+        )
         response.etc["notice"] = {"page": page, "keyword": search_keyword}
         return response
 

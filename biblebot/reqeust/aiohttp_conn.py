@@ -31,9 +31,14 @@ class Request(BaseRequest):
         verify: bool = True,
         allow_redirects: bool = False,
         timeout: Optional[float] = None,
+        proxies: Optional[str] = None,
     ) -> Response:
         timeout = timeout or DEFAULT_REQUEST_TIMEOUT
-        async with aiohttp.ClientSession() as session:
+        if proxies is not None:
+            from aiohttp_socks import ProxyConnector
+
+            proxies = ProxyConnector.from_url(proxies)
+        async with aiohttp.ClientSession(connector=proxies) as session:
             try:
                 async with session.request(
                     method.value,

@@ -142,6 +142,7 @@ class BaseRequest(metaclass=ABCMeta):
         verify: bool = True,
         allow_redirects: bool = False,
         timeout: Optional[float] = None,
+        proxies: Optional[str] = None,
     ) -> Response:
         pass
 
@@ -158,6 +159,7 @@ class BaseRequest(metaclass=ABCMeta):
         verify: bool = True,
         allow_redirects: bool = False,
         timeout: Optional[float] = None,
+        proxies: Optional[str] = None,
     ) -> Response:
         pass
 
@@ -175,5 +177,6 @@ class BaseRequest(metaclass=ABCMeta):
         verify: bool = True,
         allow_redirects: bool = False,
         timeout: Optional[float] = None,
+        proxies: Optional[str] = None,
     ) -> Response:
         pass

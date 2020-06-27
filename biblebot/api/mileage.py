@@ -65,6 +65,7 @@ class Login(ILoginFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         headers = headers or {}
         headers.update(cls.DEFAULT_HEADERS)
@@ -79,7 +80,7 @@ class Login(ILoginFetcher, IParser):
         }
 
         response = await HTTPClient.connector.post(
-            cls.URL, headers=headers, body=form, timeout=timeout, verify=False
+            cls.URL, headers=headers, body=form, timeout=timeout, verify=False, **kwargs
         )
         return response
 
@@ -144,6 +145,7 @@ class Search(IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         search_param = search_param or SearchParamData()
         response = await HTTPClient.connector.post(
@@ -153,6 +155,7 @@ class Search(IParser):
             cookies=cookies,
             timeout=timeout,
             verify=False,
+            **kwargs,
         )
 
         response.etc["req"]: SearchParamData = search_param
@@ -176,6 +179,7 @@ class Statement(IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         search_param = search_param or StatementParamData()
         response = await HTTPClient.connector.post(
@@ -185,6 +189,7 @@ class Statement(IParser):
             cookies=cookies,
             timeout=timeout,
             verify=False,
+            **kwargs,
         )
 
         response.etc["req"]: StatementParamData = search_param

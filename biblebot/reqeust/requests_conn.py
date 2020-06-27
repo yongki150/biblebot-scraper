@@ -36,8 +36,10 @@ class Request(BaseRequest):
         verify: bool = True,
         allow_redirects: bool = False,
         timeout: Optional[float] = None,
+        proxies: Optional[str] = None,
     ) -> Response:
         timeout = timeout or DEFAULT_REQUEST_TIMEOUT
+        proxies = None if proxies is None else {"http": proxies, "https": proxies}
         try:
             response: requests.models.Response = await asyncio.get_event_loop().run_in_executor(
                 None,
@@ -50,6 +52,7 @@ class Request(BaseRequest):
                     verify=verify,
                     allow_redirects=allow_redirects,
                     timeout=timeout,
+                    proxies=proxies,
                     **{body_encoding.value: body},
                 ),
             )

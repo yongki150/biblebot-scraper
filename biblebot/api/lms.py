@@ -106,10 +106,11 @@ class Login(ILoginFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         form = {"username": user_id, "password": user_pw}
         return await HTTPClient.connector.post(
-            cls.URL, headers=headers, body=form, timeout=timeout
+            cls.URL, headers=headers, body=form, timeout=timeout, **kwargs
         )
 
     @classmethod
@@ -163,9 +164,10 @@ class Profile(IGeneralFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
-            cls.URL, headers=headers, cookies=cookies, timeout=timeout
+            cls.URL, headers=headers, cookies=cookies, timeout=timeout, **kwargs
         )
 
     @classmethod
@@ -258,6 +260,7 @@ class CourseList(ISemesterFetcher, IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         url = cls.URL
 
@@ -267,7 +270,7 @@ class CourseList(ISemesterFetcher, IParser):
             url = f"{url}&{query_string}"
 
         response = await HTTPClient.connector.get(
-            url, headers=headers, cookies=cookies, timeout=timeout
+            url, headers=headers, cookies=cookies, timeout=timeout, **kwargs
         )
         response.etc["semester"] = semester
         return response
@@ -306,12 +309,13 @@ class Attendance(IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         query = {"id": course_code}
         query_string = urlencode(query)
         url = f"{cls.URL}&{query_string}"
         return await HTTPClient.connector.get(
-            url, cookies=cookies, headers=headers, timeout=timeout
+            url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
         )
 
     @classmethod

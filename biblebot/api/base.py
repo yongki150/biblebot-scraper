@@ -78,6 +78,7 @@ class ILoginFetcher(metaclass=ABCMeta):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         pass
 
@@ -91,6 +92,7 @@ class IGeneralFetcher(metaclass=ABCMeta):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         pass
 
@@ -105,6 +107,7 @@ class ISemesterFetcher(metaclass=ABCMeta):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         pass
 

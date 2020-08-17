@@ -185,7 +185,7 @@ async def main():
 
 **Output:**
 
-```json
+```text
 ResourceData(
   data={
     'courses': {
@@ -443,7 +443,7 @@ asyncio.run(main())
 
 **Output:**
 
-```json
+```text
 ResourceData(
   data={
     'summary': {

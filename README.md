@@ -65,106 +65,150 @@ asyncio.run(main())
 **Output:**
 
 ```json
-{'notice': [{'author': '장성희',
-             'date': '2020-07-31',
-             'seq': '3742',
-             'title': '[대학원 입시] 2020학년도 후기 한국성서대학교 대학원 신입생 모집',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46649?p=2'},
-            {'author': '김다윗',
-             'date': '2020-07-30',
-             'seq': '3741',
-             'title': '[기초교육원] 2020-2학기 수강신청 기초교육원, 영어교육센터 공지사항 안내',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46645?p=2'},
-            {'author': '김희',
-             'date': '2020-07-30',
-             'seq': '3740',
-             'title': '[학적] 2020-2학기 적용 융합모듈 교육과정 승인자 발표',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46644?p=2'},
-            {'author': '김희',
-             'date': '2020-07-30',
-             'seq': '3739',
-             'title': '[학적] 2020-2학기 적용 부전공 승인자 발표',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46643?p=2'},
-            {'author': '김희',
-             'date': '2020-07-30',
-             'seq': '3738',
-             'title': '[학적] 2020-2학기 적용 복수전공 승인자 발표',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46641?p=2'},
-            {'author': '김희',
-             'date': '2020-07-30',
-             'seq': '3737',
-             'title': '[학적] 2020-2학기 적용 전과 승인자 발표',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46640?p=2'},
-            {'author': '유다운',
-             'date': '2020-07-28',
-             'seq': '3736',
-             'title': '[수업] 2020-2학기 개설강좌 및 시간표 발표 안내',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46633?p=2'},
-            {'author': '조철남',
-             'date': '2020-07-28',
-             'seq': '3735',
-             'title': '[생활관] 2020-2학기 생활관 입주 신청 공고',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46631?p=2'},
-            {'author': '김희',
-             'date': '2020-07-24',
-             'seq': '3734',
-             'title': '[학적] 2019학년도 후기 학위수여자 발표',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46617?p=2'},
-            {'author': '유다운',
-             'date': '2020-07-24',
-             'seq': '3733',
-             'title': '[학점교류] 2020-2학기 서울여자대학교 학점교류 신청 안내',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46616?p=2'},
-            {'author': '윤경민',
-             'date': '2020-07-23',
-             'seq': '3732',
-             'title': '[규정] 20-7월 규정 개정 공고',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46615?p=2'},
-            {'author': '유다운',
-             'date': '2020-07-23',
-             'seq': '3731',
-             'title': '[수업] 2020-하계계절학기 성적 확인 및 이의신청 안내',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46614?p=2'},
-            {'author': '김현동',
-             'date': '2020-07-23',
-             'seq': '3730',
-             'title': '[대학인사] 2020년 장애대학생 교육복지지원 실태평가 위원회 및 보직변경에 따른 위원회 임명',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46612?p=2'},
-            {'author': '유다운',
-             'date': '2020-07-17',
-             'seq': '3729',
-             'title': '[수업] 2020-2학기 수강신청 안내 (수정 7/24)',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46603?p=2'},
-            {'author': '김병수',
-             'date': '2020-07-17',
-             'seq': '3728',
-             'title': '[채용] 컴퓨터소프트웨어학과 실습조교 채용 재공고(~7/24까지)',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46601?p=2'},
-            {'author': '윤경민',
-             'date': '2020-07-16',
-             'seq': '3727',
-             'title': '[산학협력단] 2020년도 학술지지원사업(인문사회분야) 신규과제 공모',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46599?p=2'},
-            {'author': '김병수',
-             'date': '2020-07-14',
-             'seq': '3726',
-             'title': '(코로나) 대학생 대면모임 및 활동 등 자제 협조 요청(교육부 공문)',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46598?p=2'},
-            {'author': '이은광',
-             'date': '2020-07-14',
-             'seq': '3725',
-             'title': '일립관 승강기(7층) 운행 중지 안내',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46597?p=2'},
-            {'author': '김병수',
-             'date': '2020-07-09',
-             'seq': '3724',
-             'title': '[채용] 컴퓨터소프트웨어학과 실습조교 채용 공고(~7/16까지)',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46593?p=2'},
-            {'author': '유다운',
-             'date': '2020-07-09',
-             'seq': '3723',
-             'title': '[수업] 2020-1학기 성적 이의신청 안내',
-             'url': 'https://www.bible.ac.kr/ko/life/notice/view/46591?p=2'}]}
+{
+    "notice": [
+        {
+            "seq": "3742",
+            "title": "[대학원 입시] 2020학년도 후기 한국성서대학교 대학원 신입생 모집",
+            "author": "장성희",
+            "date": "2020-07-31",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46649?p=2"
+        },
+        {
+            "seq": "3741",
+            "title": "[기초교육원] 2020-2학기 수강신청 기초교육원, 영어교육센터 공지사항 안내",
+            "author": "김다윗",
+            "date": "2020-07-30",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46645?p=2"
+        },
+        {
+            "seq": "3740",
+            "title": "[학적] 2020-2학기 적용 융합모듈 교육과정 승인자 발표",
+            "author": "김희",
+            "date": "2020-07-30",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46644?p=2"
+        },
+        {
+            "seq": "3739",
+            "title": "[학적] 2020-2학기 적용 부전공 승인자 발표",
+            "author": "김희",
+            "date": "2020-07-30",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46643?p=2"
+        },
+        {
+            "seq": "3738",
+            "title": "[학적] 2020-2학기 적용 복수전공 승인자 발표",
+            "author": "김희",
+            "date": "2020-07-30",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46641?p=2"
+        },
+        {
+            "seq": "3737",
+            "title": "[학적] 2020-2학기 적용 전과 승인자 발표",
+            "author": "김희",
+            "date": "2020-07-30",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46640?p=2"
+        },
+        {
+            "seq": "3736",
+            "title": "[수업] 2020-2학기 개설강좌 및 시간표 발표 안내",
+            "author": "유다운",
+            "date": "2020-07-28",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46633?p=2"
+        },
+        {
+            "seq": "3735",
+            "title": "[생활관] 2020-2학기 생활관 입주 신청 공고",
+            "author": "조철남",
+            "date": "2020-07-28",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46631?p=2"
+        },
+        {
+            "seq": "3734",
+            "title": "[학적] 2019학년도 후기 학위수여자 발표",
+            "author": "김희",
+            "date": "2020-07-24",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46617?p=2"
+        },
+        {
+            "seq": "3733",
+            "title": "[학점교류] 2020-2학기 서울여자대학교 학점교류 신청 안내",
+            "author": "유다운",
+            "date": "2020-07-24",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46616?p=2"
+        },
+        {
+            "seq": "3732",
+            "title": "[규정] 20-7월 규정 개정 공고",
+            "author": "윤경민",
+            "date": "2020-07-23",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46615?p=2"
+        },
+        {
+            "seq": "3731",
+            "title": "[수업] 2020-하계계절학기 성적 확인 및 이의신청 안내",
+            "author": "유다운",
+            "date": "2020-07-23",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46614?p=2"
+        },
+        {
+            "seq": "3730",
+            "title": "[대학인사] 2020년 장애대학생 교육복지지원 실태평가 위원회 및 보직변경에 따른 위원회 임명",
+            "author": "김현동",
+            "date": "2020-07-23",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46612?p=2"
+        },
+        {
+            "seq": "3729",
+            "title": "[수업] 2020-2학기 수강신청 안내 (수정 7/24)",
+            "author": "유다운",
+            "date": "2020-07-17",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46603?p=2"
+        },
+        {
+            "seq": "3728",
+            "title": "[채용] 컴퓨터소프트웨어학과 실습조교 채용 재공고(~7/24까지)",
+            "author": "김병수",
+            "date": "2020-07-17",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46601?p=2"
+        },
+        {
+            "seq": "3727",
+            "title": "[산학협력단] 2020년도 학술지지원사업(인문사회분야) 신규과제 공모",
+            "author": "윤경민",
+            "date": "2020-07-16",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46599?p=2"
+        },
+        {
+            "seq": "3726",
+            "title": "(코로나) 대학생 대면모임 및 활동 등 자제 협조 요청(교육부 공문)",
+            "author": "김병수",
+            "date": "2020-07-14",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46598?p=2"
+        },
+        {
+            "seq": "3725",
+            "title": "일립관 승강기(7층) 운행 중지 안내",
+            "author": "이은광",
+            "date": "2020-07-14",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46597?p=2"
+        },
+        {
+            "seq": "3724",
+            "title": "[채용] 컴퓨터소프트웨어학과 실습조교 채용 공고(~7/16까지)",
+            "author": "김병수",
+            "date": "2020-07-09",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46593?p=2"
+        },
+        {
+            "seq": "3723",
+            "title": "[수업] 2020-1학기 성적 이의신청 안내",
+            "author": "유다운",
+            "date": "2020-07-09",
+            "url": "https://www.bible.ac.kr/ko/life/notice/view/46591?p=2"
+        }
+    ]
+}
 ```
 
 

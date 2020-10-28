@@ -1,10 +1,10 @@
 from typing import Dict, Optional, List
 
-from biblebot.api.base import IParser, HTTPClient, APIResponseType, ResourceData
-from biblebot.reqeust.base import Response
-from biblebot.exceptions import ParsingError
+from .base import IParser, HTTPClient, APIResponseType, ResourceData
+from ..reqeust.base import Response
+from ..exceptions import ParsingError
 
-__all__ = ('Library',)
+__all__ = ("Library",)
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
 
@@ -38,12 +38,12 @@ class Library(IParser):
     @classmethod
     def parse_subject(cls, response: Response) -> List[str]:
         soup = response.soup
-        thead = soup.select_one('.sponge-guide-Box-table thead tr')
+        thead = soup.select_one(".sponge-guide-Box-table thead tr")
 
         if not thead:
             raise ParsingError("테이블 헤드가 존재하지 않습니다.", response)
 
-        head: List[str] = [th.text.strip() for th in thead.select('th')]
+        head: List[str] = [th.text.strip() for th in thead.select("th")]
         del head[4]
 
         return head
@@ -52,31 +52,29 @@ class Library(IParser):
     def parse_main_table(cls, response: Response) -> List[List]:
         soup = response.soup
 
-        tr_s = soup.select('.sponge-guide-Box-table tbody tr')
+        tbody = soup.select(".sponge-guide-Box-table tbody tr")
         body = []
 
-        if not tr_s:
+        if not tbody:
             raise ParsingError("테이블 바디가 존재하지 않습니다.", response)
 
-        for tr in tr_s:
-            num = tr.select_one('.right5').text
-            num = num.replace('\n', '')
+        for tr in tbody:
+            num = tr.select_one(".right5").text
+            num = num.replace("\n", "")
 
-            title = tr.select_one('td a strong').text
-            loan_date = tr.select('.left ul li strong')[0].text
-            return_date = tr.select('.left ul li strong')[1].text
-            state = tr.select_one('td .textcolorgreen').text
+            title = tr.select_one("td a strong").text
+            loan_date = tr.select(".left ul li strong")[0].text
+            return_date = tr.select(".left ul li strong")[1].text
+            state = tr.select_one("td .textcolorgreen").text
 
-            term = tr.select('td')[6].text
-            term = term.replace('\n', '')
+            term = tr.select("td")[6].text
+            term = term.replace("\n", "")
 
-            term_cnt = tr.select('td')[7].text
-            term_cnt = term_cnt.replace('\n', '')
+            term_cnt = tr.select("td")[7].text
+            term_cnt = term_cnt.replace("\n", "")
 
             info = [num, title, loan_date, return_date, state, term, term_cnt]
 
             body.append(info)
 
         return body
-
-

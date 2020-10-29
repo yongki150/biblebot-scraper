@@ -1,13 +1,21 @@
 from typing import Dict, Optional, List
 
-from .base import IParser, HTTPClient, APIResponseType, ResourceData
+from .base import (
+    IParser,
+    HTTPClient,
+    APIResponseType,
+    ResourceData,
+    ParserPrecondition
+)
 from ..reqeust.base import Response
 from ..exceptions import ParsingError
+from ..api.intranet import IParserPrecondition
 
 __all__ = ("Library",)
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
 
+_ParserPrecondition = ParserPrecondition(IParserPrecondition)
 
 class Library(IParser):
     URL: str = DOMAIN_NAME + "/MyLibrary"
@@ -26,6 +34,7 @@ class Library(IParser):
         )
 
     @classmethod
+    @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         head = cls.parse_subject(response)
         body = cls.parse_main_table(response)

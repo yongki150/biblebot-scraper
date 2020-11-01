@@ -1,21 +1,89 @@
 from typing import Dict, Optional, List
+from base64 import b64encode
 
 from .base import (
+    ILoginFetcher,
     IParser,
     HTTPClient,
     APIResponseType,
     ResourceData,
-    ParserPrecondition
+    ErrorData,
+    ParserPrecondition,
 )
 from ..reqeust.base import Response
 from ..exceptions import ParsingError
 from ..api.intranet import IParserPrecondition
+from .common import httpdate_to_unixtime
 
-__all__ = ("Library",)
+__all__ = (
+    "Login",
+    "Library",
+)
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
 
 _ParserPrecondition = ParserPrecondition(IParserPrecondition)
+
+class _SessionExpiredChecker(IParserPrecondition):
+    @staticmethod
+    def is_blocking(response: Response) -> Optional[ErrorData]:
+        if response.status == 302:
+            return ErrorData(
+                error={"title": "세션이 만료되어 로그인페이지로 리다이렉트 되었습니다."},
+                link=response.url
+            )
+        return None
+
+class Login(ILoginFetcher, IParser):
+    URL: str = DOMAIN_NAME + "/Account/LogOn"
+
+    @classmethod
+    async def fetch(
+            cls,
+            user_id: str,
+            user_pw: str,
+            *,
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        form = {
+            "l_id": b64encode(user_id.encode()).decode(),
+            "l_pass": b64encode(user_pw.encode()).decode(),
+        }
+        return await HTTPClient.connector.post(
+            cls.URL, headers=headers, body=form, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    async def fetch_main_page(
+            cls,
+            cookies: Dict[str, str],
+            *,
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            # https로 접속시 메인페이지로 접근이 불가능하는 이슈가 있습니다.
+            "http://lib.bible.ac.kr", cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def parse(cls, response: Response, cookies: Dict[str, str]) -> APIResponseType:
+        soup = response.soup
+        ul = soup.select_one('#sponge-header .infoBox')
+        li = ul.select('li')[1].text
+
+        iat = httpdate_to_unixtime(response.headers["date"])
+        return ResourceData(
+            data={
+                "cookies": cookies,
+                "validate-content": li,
+                "iat": iat,
+            },
+            link=response.url
+        )
 
 class Library(IParser):
     URL: str = DOMAIN_NAME + "/MyLibrary"

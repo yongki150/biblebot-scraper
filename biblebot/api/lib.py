@@ -24,6 +24,7 @@ DOMAIN_NAME: str = "https://lib.bible.ac.kr"
 
 _ParserPrecondition = ParserPrecondition(IParserPrecondition)
 
+
 class _SessionExpiredChecker(IParserPrecondition):
     @staticmethod
     def is_blocking(response: Response) -> Optional[ErrorData]:
@@ -33,6 +34,7 @@ class _SessionExpiredChecker(IParserPrecondition):
                 link=response.url
             )
         return None
+
 
 class Login(ILoginFetcher, IParser):
     URL: str = DOMAIN_NAME + "/Account/LogOn"
@@ -84,6 +86,7 @@ class Login(ILoginFetcher, IParser):
             },
             link=response.url
         )
+
 
 class Library(IParser):
     URL: str = DOMAIN_NAME + "/MyLibrary"

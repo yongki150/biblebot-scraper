@@ -1,5 +1,6 @@
 from typing import Dict, Optional, List
 from base64 import b64encode
+import re
 
 from .base import (
     ILoginFetcher,
@@ -18,6 +19,7 @@ from .common import httpdate_to_unixtime
 __all__ = (
     "Login",
     "Library",
+    "BookPhoto",
 )
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
@@ -78,6 +80,13 @@ class Login(ILoginFetcher, IParser):
         li = ul.select('li')[1].text
 
         iat = httpdate_to_unixtime(response.headers["date"])
+
+        if li == 'HOME':
+            return ErrorData(
+                error={ "title": "로그인에 실패하였습니다. 정확한 정보를 입력하세요."},
+                link=response.url,
+            )
+
         return ResourceData(
             data={
                 "cookies": cookies,
@@ -125,6 +134,7 @@ class Library(IParser):
 
         head: List[str] = [th.text.strip() for th in thead.select("th")]
         del head[4]
+        head[-1] = "도서URL"
 
         return head
 
@@ -153,8 +163,36 @@ class Library(IParser):
             term_cnt = tr.select("td")[7].text
             term_cnt = term_cnt.replace("\n", "")
 
-            info = [num, title, loan_date, return_date, state, term, term_cnt]
+            url = tr.select(".left a")[0]['href']
+
+            info = [num, title, loan_date, return_date, state, term, term_cnt, url]
 
             body.append(info)
 
         return body
+
+
+class BookPhoto(IParser):
+    @classmethod
+    async def fetch(
+        cls,
+        photo_url,
+        cookies: Optional[Dict[str, str]] = None,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            photo_url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def parse(cls, response: Response) -> APIResponseType:
+        soup = response.soup
+        img_url = soup.select_one(".page-detail-title-image a img")['src']
+
+        if bool(re.match(r"https?://", img_url)):
+            return ResourceData(data={"img_url": img_url}, link=response.url)
+        else:
+            return ErrorData(error={"title": "이미지를 불러올 수 없습니다."}, link=response.url)

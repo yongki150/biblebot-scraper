@@ -32,8 +32,7 @@ class _SessionExpiredChecker(IParserPrecondition):
     def is_blocking(response: Response) -> Optional[ErrorData]:
         if response.status == 302:
             return ErrorData(
-                error={"title": "세션이 만료되어 로그인페이지로 리다이렉트 되었습니다."},
-                link=response.url
+                error={"title": "세션이 만료되어 로그인페이지로 리다이렉트 되었습니다."}, link=response.url
             )
         return None
 
@@ -43,13 +42,13 @@ class Login(ILoginFetcher, IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            user_id: str,
-            user_pw: str,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        user_id: str,
+        user_pw: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         form = {
             "l_id": b64encode(user_id.encode()).decode(),
@@ -61,29 +60,33 @@ class Login(ILoginFetcher, IParser):
 
     @classmethod
     async def fetch_main_page(
-            cls,
-            cookies: Dict[str, str],
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
             # https로 접속시 메인페이지로 접근이 불가능하는 이슈가 있습니다.
-            "http://lib.bible.ac.kr", cookies=cookies, headers=headers, timeout=timeout, **kwargs
+            "http://lib.bible.ac.kr",
+            cookies=cookies,
+            headers=headers,
+            timeout=timeout,
+            **kwargs,
         )
 
     @classmethod
     def parse(cls, response: Response, cookies: Dict[str, str]) -> APIResponseType:
         soup = response.soup
-        ul = soup.select_one('#sponge-header .infoBox')
-        li = ul.select('li')[1].text
+        ul = soup.select_one("#sponge-header .infoBox")
+        li = ul.select("li")[1].text
 
         iat = httpdate_to_unixtime(response.headers["date"])
 
-        if li == 'HOME':
+        if li == "HOME":
             return ErrorData(
-                error={ "title": "로그인에 실패하였습니다. 정확한 정보를 입력하세요."},
+                error={"title": "로그인에 실패하였습니다. 정확한 정보를 입력하세요."},
                 link=response.url,
             )
 
@@ -93,7 +96,7 @@ class Login(ILoginFetcher, IParser):
                 "validate-content": li,
                 "iat": iat,
             },
-            link=response.url
+            link=response.url,
         )
 
 
@@ -107,7 +110,7 @@ class Library(IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
             cls.URL, cookies=cookies, headers=headers, timeout=timeout, **kwargs
@@ -134,7 +137,7 @@ class Library(IParser):
 
         head: List[str] = [th.text.strip() for th in thead.select("th")]
         del head[4]
-        head[-1] = "도서URL"
+        head[-1] = "도서이미지"
 
         return head
 
@@ -149,26 +152,12 @@ class Library(IParser):
             raise ParsingError("테이블 바디가 존재하지 않습니다.", response)
 
         for tr in tbody:
-            num = tr.select_one(".right5").text
-            num = num.replace("\n", "")
-
-            title = tr.select_one("td a strong").text
-            loan_date = tr.select(".left ul li strong")[0].text
-            return_date = tr.select(".left ul li strong")[1].text
-            state = tr.select_one("td .textcolorgreen").text
-
-            term = tr.select("td")[6].text
-            term = term.replace("\n", "")
-
-            term_cnt = tr.select("td")[7].text
-            term_cnt = term_cnt.replace("\n", "")
-
-            url = tr.select(".left a")[0]['href']
-
-            info = [num, title, loan_date, return_date, state, term, term_cnt, url]
+            info = [td.text.strip() for td in tr.select("td")]
+            info[1] = tr.select_one("td a strong").text
+            info[-1] = tr.select(".left a")[0]["href"]
+            del info[4]
 
             body.append(info)
-
         return body
 
 
@@ -181,7 +170,7 @@ class BookPhoto(IParser):
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
-        **kwargs
+        **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
             photo_url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
@@ -190,9 +179,9 @@ class BookPhoto(IParser):
     @classmethod
     def parse(cls, response: Response) -> APIResponseType:
         soup = response.soup
-        img_url = soup.select_one(".page-detail-title-image a img")['src']
+        img_url = soup.select_one(".page-detail-title-image a img")["src"]
 
-        if bool(re.match(r"https?://", img_url)):
+        if re.match(r"https?://", img_url):
             return ResourceData(data={"img_url": img_url}, link=response.url)
         else:
             return ErrorData(error={"title": "이미지를 불러올 수 없습니다."}, link=response.url)

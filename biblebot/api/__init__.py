@@ -71,6 +71,6 @@ class MileageParam:
 
 
 class LibraryAPI:
-    Login = libLogin
-    Library = libLibrary
-    BookPhoto = libBookPhoto
+    Login = LibraryLogin
+    CheckoutList = LibraryCheckoutList
+    BookPhoto = LibraryBookPhoto

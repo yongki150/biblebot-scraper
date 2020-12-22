@@ -18,7 +18,7 @@ from .common import httpdate_to_unixtime
 
 __all__ = (
     "Login",
-    "Library",
+    "CheckoutList",
     "BookPhoto",
 )
 
@@ -81,7 +81,6 @@ class Login(ILoginFetcher, IParser):
         soup = response.soup
         ul = soup.select_one("#sponge-header .infoBox")
         li = ul.select("li")[1].text
-
         iat = httpdate_to_unixtime(response.headers["date"])
 
         if li == "HOME":
@@ -100,7 +99,7 @@ class Login(ILoginFetcher, IParser):
         )
 
 
-class Library(IParser):
+class CheckoutList(IParser):
     URL: str = DOMAIN_NAME + "/MyLibrary"
 
     @classmethod

@@ -20,9 +20,9 @@ from .mileage import Search as MileageSearch
 from .mileage import Statement as MileageStatement
 from ._mileage import SearchParamData as MileageSearchParamData
 from ._mileage import StatementParamData as MileageStatementParamData
-from .library import Login as libLogin
-from .library import Library as libLibrary
-from .library import BookPhoto as libBookPhoto
+from .library import Login as LibraryLogin
+from .library import CheckoutList as LibraryCheckoutList
+from .library import BookPhoto as LibraryBookPhoto
 
 
 __all__ = (

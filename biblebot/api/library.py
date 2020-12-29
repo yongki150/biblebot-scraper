@@ -162,7 +162,7 @@ class CheckoutList(IParser):
         # head 는 ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']로 구성되어있습니다.
         head: List[str] = [th.text.strip() for th in thead.select("th")]
         del head[4]
-        head[0] = 'ISBN'
+        head[0] = "ISBN"
         head[-1] = "도서이미지"
 
         return head
@@ -187,7 +187,7 @@ class CheckoutList(IParser):
         return body
 
 
-class BookPhoto():
+class BookPhoto:
     @classmethod
     async def fetch(
         cls,

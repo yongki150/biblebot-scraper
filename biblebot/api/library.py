@@ -116,6 +116,31 @@ class CheckoutList(IParser):
         )
 
     @classmethod
+    async def fetch_detail(
+        cls,
+        detail_url,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            detail_url, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def parse_detail(cls, response: Response) -> List[str]:
+        soup = response.soup
+
+        isbn = soup.select("#detailtoprightnew .sponge-book-list-data")[1].text.strip()
+        img_url = soup.select_one(".page-detail-title-image a img")["src"]
+
+        if not re.match(r"https?://", img_url):
+            img_url = None
+
+        return [isbn, img_url]
+
+    @classmethod
     @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         head = cls.parse_subject(response)
@@ -134,8 +159,10 @@ class CheckoutList(IParser):
         if not thead:
             raise ParsingError("테이블 헤드가 존재하지 않습니다.", response)
 
+        # head 는 ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']로 구성되어있습니다.
         head: List[str] = [th.text.strip() for th in thead.select("th")]
         del head[4]
+        head[0] = 'ISBN'
         head[-1] = "도서이미지"
 
         return head
@@ -160,27 +187,16 @@ class CheckoutList(IParser):
         return body
 
 
-class BookPhoto(IParser):
+class BookPhoto():
     @classmethod
     async def fetch(
         cls,
         photo_url,
-        cookies: Optional[Dict[str, str]] = None,
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
-            photo_url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+            photo_url, headers=headers, timeout=timeout, **kwargs
         )
-
-    @classmethod
-    def parse(cls, response: Response) -> APIResponseType:
-        soup = response.soup
-        img_url = soup.select_one(".page-detail-title-image a img")["src"]
-
-        if re.match(r"https?://", img_url):
-            return ResourceData(data={"img_url": img_url}, link=response.url)
-        else:
-            return ErrorData(error={"title": "이미지를 불러올 수 없습니다."}, link=response.url)

@@ -179,7 +179,7 @@ class CheckoutList(IParser):
 
         for tr in tbody:
             info = [td.text.strip() for td in tr.select("td")]
-            info[1] = tr.select_one("td a strong").text
+            info[1] = tr.select_one("td a strong").text.strip()
             info[-1] = tr.select(".left a")[0]["href"]
             del info[4]
 

@@ -22,6 +22,7 @@ from ._mileage import SearchParamData as MileageSearchParamData
 from ._mileage import StatementParamData as MileageStatementParamData
 from .library import Login as LibraryLogin
 from .library import CheckoutList as LibraryCheckoutList
+from .library import BookDetail as LibraryBookDetail
 from .library import BookPhoto as LibraryBookPhoto
 
 
@@ -73,4 +74,5 @@ class MileageParam:
 class LibraryAPI:
     Login = LibraryLogin
     CheckoutList = LibraryCheckoutList
+    BookDetail = LibraryBookDetail
     BookPhoto = LibraryBookPhoto

@@ -19,6 +19,7 @@ from .common import httpdate_to_unixtime
 __all__ = (
     "Login",
     "CheckoutList",
+    "BookDetail",
     "BookPhoto",
 )
 
@@ -68,7 +69,7 @@ class Login(ILoginFetcher, IParser):
         **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
-            # https로 접속시 메인페이지로 접근이 불가능하는 이슈가 있습니다.
+            # https 접속시 메인페이지로 접근이 불가능한 이슈
             "http://lib.bible.ac.kr",
             cookies=cookies,
             headers=headers,
@@ -116,31 +117,6 @@ class CheckoutList(IParser):
         )
 
     @classmethod
-    async def fetch_detail(
-        cls,
-        detail_url,
-        *,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        **kwargs,
-    ) -> Response:
-        return await HTTPClient.connector.get(
-            detail_url, headers=headers, timeout=timeout, **kwargs
-        )
-
-    @classmethod
-    def parse_detail(cls, response: Response) -> List[str]:
-        soup = response.soup
-
-        isbn = soup.select("#detailtoprightnew .sponge-book-list-data")[1].text.strip()
-        img_url = soup.select_one(".page-detail-title-image a img")["src"]
-
-        if not re.match(r"https?://", img_url):
-            img_url = None
-
-        return [isbn, img_url]
-
-    @classmethod
     @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         head = cls.parse_subject(response)
@@ -159,7 +135,7 @@ class CheckoutList(IParser):
         if not thead:
             raise ParsingError("테이블 헤드가 존재하지 않습니다.", response)
 
-        # head 는 ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']로 구성되어있습니다.
+        # head = ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']
         head: List[str] = [th.text.strip() for th in thead.select("th")]
         del head[4]
         head[0] = "ISBN"
@@ -170,7 +146,6 @@ class CheckoutList(IParser):
     @classmethod
     def parse_main_table(cls, response: Response) -> List[List]:
         soup = response.soup
-
         tbody = soup.select(".sponge-guide-Box-table tbody tr")
         body = []
 
@@ -187,6 +162,32 @@ class CheckoutList(IParser):
         return body
 
 
+class BookDetail:
+    @classmethod
+    async def fetch(
+        cls,
+        path,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            DOMAIN_NAME + path, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def parse(cls, response: Response) -> List[str]:
+        soup = response.soup
+        isbn = soup.select("#detailtoprightnew .sponge-book-list-data")[1].text.strip()
+        img_url = soup.select_one(".page-detail-title-image a img")["src"]
+
+        if not re.match(r"https?://", img_url):
+            img_url = None
+
+        return [isbn, img_url]
+
+
 class BookPhoto:
     @classmethod
     async def fetch(
@@ -200,3 +201,8 @@ class BookPhoto:
         return await HTTPClient.connector.get(
             photo_url, headers=headers, timeout=timeout, **kwargs
         )
+
+    @classmethod
+    def parse(cls, response: Response) -> APIResponseType:
+        if response.headers["content-type"][:5] == "image":
+            return ResourceData(data={"raw_image": response.raw}, link=response.url)

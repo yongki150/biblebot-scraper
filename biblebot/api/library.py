@@ -14,7 +14,7 @@ from .base import (
 from ..reqeust.base import Response
 from ..exceptions import ParsingError
 from ..api.intranet import IParserPrecondition
-from .common import httpdate_to_unixtime
+from .common import httpdate_to_unixtime, extract_alerts
 
 __all__ = (
     "Login",
@@ -54,50 +54,45 @@ class Login(ILoginFetcher, IParser):
         form = {
             "l_id": b64encode(user_id.encode()).decode(),
             "l_pass": b64encode(user_pw.encode()).decode(),
+            # "l_id": user_id,
+            # "l_pass": user_pw,
         }
         return await HTTPClient.connector.post(
             cls.URL, headers=headers, body=form, timeout=timeout, **kwargs
         )
 
     @classmethod
-    async def fetch_main_page(
-        cls,
-        cookies: Dict[str, str],
-        *,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        **kwargs,
-    ) -> Response:
-        return await HTTPClient.connector.get(
-            # https 접속시 메인페이지로 접근이 불가능한 이슈
-            "http://lib.bible.ac.kr",
-            cookies=cookies,
-            headers=headers,
-            timeout=timeout,
-            **kwargs,
-        )
-
-    @classmethod
-    def parse(cls, response: Response, cookies: Dict[str, str]) -> APIResponseType:
+    def parse(cls, response: Response) -> APIResponseType:
         soup = response.soup
-        ul = soup.select_one("#sponge-header .infoBox")
-        li = ul.select("li")[1].text
-        iat = httpdate_to_unixtime(response.headers["date"])
-
-        if li == "HOME":
+        # 로그인 실패: 잘못된 입력
+        # @@@ 이전 common 에 사용된 메소드들을 재사용할 수 있나?
+        # @@@ typing.pyi 확인
+        # @@@ role 속성 활용
+        if "location" not in response.headers:
+            alert = soup.select_one(".alert-warning").text.strip()
             return ErrorData(
-                error={"title": "로그인에 실패하였습니다. 정확한 정보를 입력하세요."},
-                link=response.url,
+                error={"title": alert},
+                link=response.url
             )
-
-        return ResourceData(
-            data={
-                "cookies": cookies,
-                "validate-content": li,
-                "iat": iat,
-            },
-            link=response.url,
-        )
+        m = re.search(r"ErrorCode=(\d+)", response.headers["location"])
+        # 로그인 실패: json 형식
+        # @@@ title 무엇을 넣을 것이냐
+        if m:
+            error_code = m.group(1)
+            return ErrorData(
+                error={
+                    # "title":
+                    "code": error_code
+                },
+                link=response.url
+            )
+        # 로그인 성공
+        else:
+            iat = httpdate_to_unixtime(response.headers["date"])
+            return ResourceData(
+                data={"cookies": response.cookies, "iat": iat},
+                link=response.url
+            )
 
 
 class CheckoutList(IParser):

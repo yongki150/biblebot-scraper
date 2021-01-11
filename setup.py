@@ -19,7 +19,7 @@ setup(
     version=about["__version__"],
     author=about["__author__"],
     author_email=about["__author_email__"],
-    maintainer=", ".join((f'{about["__author__"]} <{about["__author_email__"]}>',)),
+    maintainer=", ".join((f'{about["__author__"]} <{about["__author_email__"]}>', *about["__contributors__"])),
     description=about["__description__"],
     long_description=long_description,
     long_description_content_type="text/markdown",

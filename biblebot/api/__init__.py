@@ -20,6 +20,10 @@ from .mileage import Search as MileageSearch
 from .mileage import Statement as MileageStatement
 from ._mileage import SearchParamData as MileageSearchParamData
 from ._mileage import StatementParamData as MileageStatementParamData
+from .library import Login as LibraryLogin
+from .library import CheckoutList as LibraryCheckoutList
+from .library import BookDetail as LibraryBookDetail
+from .library import BookPhoto as LibraryBookPhoto
 
 
 __all__ = (
@@ -31,6 +35,7 @@ __all__ = (
     "KbuAPI",
     "MileageAPI",
     "MileageParam",
+    "LibraryAPI",
 )
 
 
@@ -64,3 +69,10 @@ class MileageAPI:
 class MileageParam:
     SearchParamData = MileageSearchParamData
     StatementParamData = MileageStatementParamData
+
+
+class LibraryAPI:
+    Login = LibraryLogin
+    CheckoutList = LibraryCheckoutList
+    BookDetail = LibraryBookDetail
+    BookPhoto = LibraryBookPhoto

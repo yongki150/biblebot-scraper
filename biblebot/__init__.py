@@ -31,4 +31,5 @@ __all__ = (
     "ClientError",
     "ServerError",
     "ParsingError",
+    "LibraryAPI",
 )

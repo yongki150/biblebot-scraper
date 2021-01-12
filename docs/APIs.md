@@ -22,6 +22,11 @@
     - <a href="#Mileage_Login" name="id1_4_1">class biblebot.MileageAPI.Login</a>
     - <a href="#Mileage_Search" name="id1_4_2">class biblebot.MileageAPI.Search</a>
     - <a href="#Mileage_Statement" name="id1_4_3">class biblebot.MileageAPI.Statement</a>
+  - <a href="#Library" name="id1_5">Library API</a>
+    - <a href="#Library_Login" name="id1_5_1">class biblebot.LibraryAPI.Login</a>
+    - <a href="#Library_CheckoutList" name="id1_5_2">class biblebot.LibraryAPI.CheckoutList</a>
+    - <a href="#Library_BookDetail" name="id1_5_3">class biblebot.LibraryAPI.BookDetail</a>
+    - <a href="#Library_BookPhoto" name="id1_5_4">class biblebot.LibraryAPI.BookPhoto</a>
 - <a href="#Exceptions" name="id2">Exceptions</a>
 
 
@@ -731,6 +736,135 @@ def parse(cls, response: Response) -> APIResponseType:
 | cookies      | 로그인시 얻은 쿠키                                           |
 | search_param | 검색 파라미터 (`biblebot.MileageParam.StatementParamData` 이용) |
 
+
+
+### <a href="#id1_5" name="Library">LibraryAPI</a>
+
+> 한국성서대학교 도서관의 대출 목록을 가져오는 API입니다. 
+
+
+
+#### <a href="#id1_5_1" name="Library_Login">class biblebot.LibraryAPI.Login</a>
+
+> 도서관홈페이지 로그인을 위한 클래스
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    user_id: str,
+    user_pw: str,
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+  
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter | Description    |
+| --------- | -------------- |
+| user_id   | 도서관홈페이지 아이디   |
+| user_pw   | 도서관홈페이지 패스워드 |
+
+
+
+#### <a href="#id1_5_2" name="Library_CheckoutList">class biblebot.LibraryAPI.CheckoutList</a>
+
+> 대출 목록을 가져오는 클래스
+
+
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    cookies: Dict[str, str],
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter    | Description                                                  |
+| :----------- | ------------------------------------------------------------ |
+| cookies      | 로그인시 얻은 쿠키                                           |
+
+
+
+#### <a href="#id1_5_3" name="Library_BookDetail">class biblebot.LibraryAPI.BookDetail</a>
+
+> 대출된 도서의 상세 정보를 가져오는 클래스
+
+
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    path: str,
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> List[str]:
+    ...
+```
+
+| Parameter    | Description                                                  |
+| :----------- | ------------------------------------------------------------ |
+| path      | 대출된 도서의 상세페이지로 가는 경로                                           |
+
+
+
+#### <a href="#id1_5_4" name="Library_BookPhoto">class biblebot.LibraryAPI.BookPhoto</a>
+
+> 대출된 도서의 이미지를 가져오는 클래스
+
+
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    photo_url: str,
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter    | Description                                                  |
+| :----------- | ------------------------------------------------------------ |
+| photo_url      | 대출된 도서의 이미지를 가져오는 URL                                           |
 
 
 

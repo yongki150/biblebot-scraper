@@ -24,7 +24,7 @@
     - <a href="#Mileage_Statement" name="id1_4_3">class biblebot.MileageAPI.Statement</a>
   - <a href="#Library" name="id1_5">Library API</a>
     - <a href="#Library_Login" name="id1_5_1">class biblebot.LibraryAPI.Login</a>
-    - <a href="#Library_CheckoutLiST" name="id1_5_2">class biblebot.LibraryAPI.CheckoutList</a>
+    - <a href="#Library_CheckoutList" name="id1_5_2">class biblebot.LibraryAPI.CheckoutList</a>
     - <a href="#Library_BookDetail" name="id1_5_3">class biblebot.LibraryAPI.BookDetail</a>
     - <a href="#Library_BookPhoto" name="id1_5_4">class biblebot.LibraryAPI.BookPhoto</a>
 - <a href="#Exceptions" name="id2">Exceptions</a>

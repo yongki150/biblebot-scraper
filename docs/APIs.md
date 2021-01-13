@@ -775,6 +775,34 @@ def parse(cls, response: Response) -> APIResponseType:
 
 
 
+**Example:**
+
+```python
+import asyncio
+
+from biblebot import LibraryAPI
+
+
+async def main():
+    response = await LibraryAPI.Login.fetch("아이디", "비밀번호")
+    result = LibraryAPI.Login.parse(response)
+    print(result)
+
+asyncio.run(main())
+```
+
+**Output:**
+
+```text
+# 정상적인 아이디/패스워드
+ResourceData(data={'cookies': {'ASP.NET_SessionId': 'w2ijlsks20scje20tnkbkcev'}, 'iat': 1610438537}, link='https://lib.bible.ac.kr/Account/LogOn', meta={})
+
+# 비정상적인 아이디 또는 패스워드
+ErrorData(error={'title': '제공한 사용자 이름 또는 암호가 잘못되었습니다.'}, link='https://lib.bible.ac.kr/Account/LogOn', meta={})
+```
+
+
+
 #### <a href="#id1_5_2" name="Library_CheckoutList">class biblebot.LibraryAPI.CheckoutList</a>
 
 > 대출 목록을 가져오는 클래스
@@ -803,6 +831,74 @@ def parse(cls, response: Response) -> APIResponseType:
 | Parameter    | Description                                                  |
 | :----------- | ------------------------------------------------------------ |
 | cookies      | 로그인시 얻은 쿠키                                           |
+
+
+
+**Example:**
+
+```python
+import asyncio
+
+from biblebot import LibraryAPI
+
+
+async def main():
+    # Login
+    response = await LibraryAPI.Login.fetch("아이디", "비밀번호")
+    result = LibraryAPI.Login.parse(response)
+    cookie = result.data["cookies"]
+
+    # Get CheckoutList
+    response = await LibraryAPI.CheckoutList.fetch(cookies=cookie)
+    result = LibraryAPI.CheckoutList.parse(response)
+    print(result)
+
+asyncio.run(main())
+```
+
+**Output:**
+
+```text
+# 대출 내역이 있는 경우
+ResourceData(
+   data={
+       "head":[
+          "No",
+          "서지정보",
+          "대출일자",
+          "반납예정일",
+          "대출상태",
+          "연기신청",
+          "상세페이지 URL"
+       ],
+       "body":[
+          [
+             "1",
+             "여자 20대, 10년 후 명함을 준비하라",
+             "2021-01-11",
+             "2021-01-20",
+             "대출중",
+             "연장",
+             "/Search/Detail/83029"
+          ],
+          [
+             "2",
+             "계속 모드 : 목표달성이 쉬워지는 계속하는 기술",
+             "2021-01-11",
+             "2021-01-20",
+             "대출중",
+             "연장",
+             "/Search/Detail/83826"
+          ]
+       ]
+    },
+   link="https://lib.bible.ac.kr/MyLibrary",
+   meta={}
+)
+
+# 대출 내역이 없는 경우
+ErrorData(error={'title': '대출한 내역이 없습니다.'}, link='https://lib.bible.ac.kr/MyLibrary', meta={})
+```
 
 
 
@@ -837,6 +933,44 @@ def parse(cls, response: Response) -> List[str]:
 
 
 
+**Example:**
+
+```python
+import asyncio
+
+from biblebot import LibraryAPI
+
+
+async def main():
+    # Login
+    response = await LibraryAPI.Login.fetch("ygflove95", "dms!15096")
+    result = LibraryAPI.Login.parse(response)
+    cookie = result.data["cookies"]
+
+    # Get CheckoutList
+    response = await LibraryAPI.CheckoutList.fetch(cookies=cookie)
+    result = LibraryAPI.CheckoutList.parse(response)
+
+    # Get BookDetail
+    for book in result.data["body"]:
+        response = await LibraryAPI.BookDetail.fetch(path=book[-1])
+        print(LibraryAPI.BookDetail.parse(response))
+
+asyncio.run(main())
+```
+
+**Output:**
+
+```text
+# 도서 상세 정보(ISBN넘버, 이미지 URL) 결과
+['9788990987418', None]
+
+# 이미지가 없는 경우
+['9788992555814', 'https://bookthumb-phinf.pstatic.net/cover/045/792/04579220.jpg?type=m1&udate=20130713']
+```
+
+
+
 #### <a href="#id1_5_4" name="Library_BookPhoto">class biblebot.LibraryAPI.BookPhoto</a>
 
 > 대출된 도서의 이미지를 가져오는 클래스
@@ -865,6 +999,124 @@ def parse(cls, response: Response) -> APIResponseType:
 | Parameter    | Description                                                  |
 | :----------- | ------------------------------------------------------------ |
 | photo_url      | 대출된 도서의 이미지를 가져오는 URL                                           |
+
+
+
+**Example:**
+
+```python
+from typing import Dict, Union
+from base64 import b64encode
+from io import BytesIO
+import asyncio
+
+from PIL import Image
+
+import biblebot
+from biblebot import LibraryAPI
+
+
+def get_image_info(raw_img: bytes) -> Dict[str, Union[int, str]]:
+    img = Image.open(BytesIO(raw_img))
+    width, height = img.size
+    fmt = img.format
+    return {
+        "width": width,
+        "height": height,
+        "format": fmt,
+        "img": b64encode(raw_img).decode(),
+    }
+
+
+async def main():
+    """
+    CheckoutList를 통해
+    ['No', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '상세페이지 URL']의 데이터를 갖는다.
+
+    상세 정보가 필요하면
+    CheckoutList → BookDetail → BookPhoto를 거쳐야하는데,
+    CheckoutList 결과 데이터에 변화가 이루어진다.
+
+    최종적으로
+    ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']의 데이터가 완성된다.
+    """
+    # Login
+    response = await LibraryAPI.Login.fetch("아이디", "비밀번호")
+    result = LibraryAPI.Login.parse(response)
+    cookie = result.data["cookies"]
+
+    # Get CheckoutList
+    response = await LibraryAPI.CheckoutList.fetch(cookies=cookie)
+    result = LibraryAPI.CheckoutList.parse(response)
+
+    # Get BookDetail
+    result.data["head"][0] = "ISBN"
+    result.data["head"][-1] = "도서이미지"
+    for book in result.data["body"]:
+        response = await LibraryAPI.BookDetail.fetch(path=book[-1])
+        isbn, photo_url = LibraryAPI.BookDetail.parse(response)
+        # Put ISBN at book[0]
+        book[0] = isbn
+        # Get BookPhoto at book[-1]
+        if photo_url:
+            response = await LibraryAPI.BookPhoto.fetch(photo_url=photo_url)
+            photo_result = LibraryAPI.BookPhoto.parse(response)
+            book[-1] = (
+                get_image_info(photo_result.data["raw_image"])
+                if isinstance(photo_result, biblebot.ResourceData)
+                else None
+            )
+        else:
+            book[-1] = None
+    print(result)
+
+asyncio.run(main())
+```
+
+**Output:**
+
+```text
+ResourceData(
+    data={
+       "head":[
+          "ISBN",
+          "서지정보",
+          "대출일자",
+          "반납예정일",
+          "대출상태",
+          "연기신청",
+          "도서이미지"
+       ],
+       "body":[
+          [
+             "9788990987418",
+             "여자 20대, 10년 후 명함을 준비하라",
+             "2021-01-11",
+             "2021-01-20",
+             "대출중",
+             "연장",
+             "None"
+          ],
+          [
+             "9788992555814",
+             "계속 모드 : 목표달성이 쉬워지는 계속하는 기술",
+             "2021-01-11",
+             "2021-01-20",
+             "대출중",
+             "연장",
+             {
+                "width":82,
+                "height":117,
+                "format":"JPEG",
+                "img":"/9j/4AAQSkZJRgABAQAAAQABAAD/..."
+             }
+          ]
+       ]
+    },
+    link="https://lib.bible.ac.kr/MyLibrary",
+    meta={}
+)
+```
 
 
 

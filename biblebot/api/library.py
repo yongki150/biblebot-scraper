@@ -20,7 +20,6 @@ from .base import (
     ParserPrecondition,
 )
 from ..reqeust.base import Response
-from ..exceptions import ParsingError
 from ..api.intranet import IParserPrecondition
 from .common import httpdate_to_unixtime, parse_table
 
@@ -174,3 +173,45 @@ class BookPhoto:
     def parse(cls, response: Response) -> APIResponseType:
         if response.headers["content-type"][:5] == "image":
             return ResourceData(data={"raw_image": response.raw}, link=response.url)
+
+
+class NewBook:
+    @classmethod
+    async def fetch(
+        cls,
+        url,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            url, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    async def parse(cls, response: Response) -> APIResponseType:
+        data: Dict = {}
+        soup = response.soup
+        new_book_list = soup.select(".sponge-newbook-list > li")
+
+        for book_href in new_book_list:
+            middle_page_url = DOMAIN_NAME + book_href.select_one("a")["href"]
+            middle_response = await cls.fetch(middle_page_url)
+
+            if middle_response.status is 200:
+                path = middle_response.soup.find(class_="row sponge-search-detail").find("a")["href"]
+                detail_page_url = DOMAIN_NAME + path
+                detail_response = await cls.fetch(detail_page_url)
+
+                if detail_response.status is 200:
+                    detail_soup = detail_response.soup
+                    body = detail_soup.find(class_="sponge_cent_naver sponge-guide-Box")
+                    name = body.find("img")["alt"]
+                    book_introduction = detail_soup.find(class_="dsc").text
+
+                    img_url = body.find("img")["src"]
+                    image_response = await BookPhoto.fetch(img_url)
+                    image_data = BookPhoto.parse(image_response).data["raw_image"]
+                    data[name] = {"image": image_data, "introduction": book_introduction}
+
+        return ResourceData(data=data, link="")

@@ -28,6 +28,8 @@ __all__ = (
     "CheckoutList",
     "BookDetail",
     "BookPhoto",
+    "NewBookPath",
+    "BookIntro",
 )
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
@@ -175,43 +177,50 @@ class BookPhoto:
             return ResourceData(data={"raw_image": response.raw}, link=response.url)
 
 
-class NewBook:
+class NewBookPath:
+    URL: str = DOMAIN_NAME + "/Search/New"
+
     @classmethod
     async def fetch(
         cls,
-        url,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
-            url, headers=headers, timeout=timeout, **kwargs
+            cls.URL, headers=headers, timeout=timeout, **kwargs
         )
 
     @classmethod
-    async def parse(cls, response: Response) -> APIResponseType:
-        data: Dict = {}
+    def parse(cls, response: Response) -> List[str]:
         soup = response.soup
-        new_book_list = soup.select(".sponge-newbook-list > li")
+        new_book_path_list = soup.select(".sponge-newbook-list > li")
+        new_book_path_list = [book.select_one("a")["href"] for book in new_book_path_list]
 
-        for book_href in new_book_list:
-            middle_page_url = DOMAIN_NAME + book_href.select_one("a")["href"]
-            middle_response = await cls.fetch(middle_page_url)
+        return new_book_path_list
 
-            if middle_response.status is 200:
-                path = middle_response.soup.find(class_="row sponge-search-detail").find("a")["href"]
-                detail_page_url = DOMAIN_NAME + path
-                detail_response = await cls.fetch(detail_page_url)
 
-                if detail_response.status is 200:
-                    detail_soup = detail_response.soup
-                    body = detail_soup.find(class_="sponge_cent_naver sponge-guide-Box")
-                    name = body.find("img")["alt"]
-                    book_introduction = detail_soup.find(class_="dsc").text
+class BookIntro:
+    URL: str = DOMAIN_NAME + "/Naver/NaverDetail?isbn="
 
-                    img_url = body.find("img")["src"]
-                    image_response = await BookPhoto.fetch(img_url)
-                    image_data = BookPhoto.parse(image_response).data["raw_image"]
-                    data[name] = {"image": image_data, "introduction": book_introduction}
+    @classmethod
+    async def fetch(
+        cls,
+        isbn: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            cls.URL + isbn, headers=headers, timeout=timeout, **kwargs
+        )
 
-        return ResourceData(data=data, link="")
+    @classmethod
+    def parse(cls, response: Response) -> List[str]:
+        soup = response.soup
+        div = soup.find(class_="sponge_cent_naver sponge-guide-Box")
+        title = div.find("img")["alt"]
+        introduction = soup.find(class_="dsc").text
+
+        return [title, introduction]

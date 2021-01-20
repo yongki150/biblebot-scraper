@@ -7,6 +7,7 @@ BookDetail과 BookPhoto를 통해
 ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']의 데이터가 완성된다.
 """
 from typing import Dict, Optional, List, Tuple
+from dataclasses import dataclass
 from base64 import b64encode
 import re
 
@@ -35,6 +36,13 @@ __all__ = (
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
 
 _ParserPrecondition = ParserPrecondition(IParserPrecondition)
+
+
+@dataclass
+class NewBookData:
+    title: str
+    introduction: str
+    img: str
 
 
 class _SessionExpiredChecker(IParserPrecondition):

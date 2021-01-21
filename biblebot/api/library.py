@@ -1,4 +1,5 @@
 """
+##### 대출목록 기능 #####
 CheckoutList → BookDetail → BookPhoto를 거쳐야만 데이터가 취합되는 구조이다.
 CheckoutList를 통해
 ['No', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '상세페이지 URL']의 데이터가
@@ -7,7 +8,6 @@ BookDetail과 BookPhoto를 통해
 ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']의 데이터가 완성된다.
 """
 from typing import Dict, Optional, List, Tuple
-from dataclasses import dataclass
 from base64 import b64encode
 import re
 
@@ -36,13 +36,6 @@ __all__ = (
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
 
 _ParserPrecondition = ParserPrecondition(IParserPrecondition)
-
-
-@dataclass
-class NewBookData:
-    title: str
-    introduction: str
-    img: str
 
 
 class _SessionExpiredChecker(IParserPrecondition):
@@ -227,8 +220,8 @@ class BookIntro:
     @classmethod
     def parse(cls, response: Response) -> List[str]:
         soup = response.soup
-        div = soup.find(class_="sponge_cent_naver sponge-guide-Box")
-        title = div.find("img")["alt"]
-        introduction = soup.find(class_="dsc").text
+        div = soup.find(class_="sponge-page-guide")
+        title = div.find(class_="sponge-book-title")
+        introduction = div.find(id_="bookIntroContent")
 
         return [title, introduction]

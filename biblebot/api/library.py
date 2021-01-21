@@ -9,6 +9,7 @@ BookDetail과 BookPhoto를 통해
 from typing import Dict, Optional, List, Tuple
 from base64 import b64encode
 import re
+import asyncio
 
 from .base import (
     ILoginFetcher,
@@ -28,6 +29,7 @@ __all__ = (
     "CheckoutList",
     "BookDetail",
     "BookPhoto",
+    "NewBook"
 )
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
@@ -189,29 +191,44 @@ class NewBook:
         )
 
     @classmethod
-    async def parse(cls, response: Response) -> APIResponseType:
-        data: Dict = {}
-        soup = response.soup
-        new_book_list = soup.select(".sponge-newbook-list > li")
+    async def detail_parse(cls, url) -> list:
+        data = []
+        middle_response = await cls.fetch(url)
+        middle_soup = middle_response.soup
+        isbn = middle_soup.find_all(class_="sponge-book-list-data")
+        book_name = middle_soup.find(class_="sponge-book-title").text
 
-        for book_href in new_book_list:
-            middle_page_url = DOMAIN_NAME + book_href.select_one("a")["href"]
-            middle_response = await cls.fetch(middle_page_url)
+        if middle_response.status == 200:
+            path = middle_response.soup.find(class_="row sponge-search-detail").find("a")["href"]
+            detail_page_url = DOMAIN_NAME + path
+            detail_response = await cls.fetch(detail_page_url)
 
-            if middle_response.status is 200:
-                path = middle_response.soup.find(class_="row sponge-search-detail").find("a")["href"]
-                detail_page_url = DOMAIN_NAME + path
-                detail_response = await cls.fetch(detail_page_url)
+            if detail_response.status == 200:
+                detail_soup = detail_response.soup
+                book_introduction = detail_soup.find(class_="dsc").text
 
-                if detail_response.status is 200:
-                    detail_soup = detail_response.soup
-                    body = detail_soup.find(class_="sponge_cent_naver sponge-guide-Box")
-                    name = body.find("img")["alt"]
-                    book_introduction = detail_soup.find(class_="dsc").text
-
-                    img_url = body.find("img")["src"]
+                body = detail_soup.find(class_="sponge_cent_naver sponge-guide-Box")
+                img_url = body.find("img")["src"]
+                if img_url != "":
                     image_response = await BookPhoto.fetch(img_url)
                     image_data = BookPhoto.parse(image_response).data["raw_image"]
-                    data[name] = {"image": image_data, "introduction": book_introduction}
+                else:
+                    image_data = "null"
+                isbn_text = isbn[1].text.strip()
+                data.append([isbn_text, book_name, book_introduction, image_data])
+        return data
 
-        return ResourceData(data=data, link="")
+    @classmethod
+    async def parse(cls, response: Response) -> APIResponseType:
+        data = {"head": {"ISBN", "도서제목", "도서소개", "도서이미지"}, "body": []}
+        soup = response.soup
+        new_book_list = soup.select(".sponge-newbook-list > li")
+        futures = []
+        for book_href in new_book_list:
+            middle_page_url = DOMAIN_NAME + book_href.select_one("a")["href"]
+            futures.append((asyncio.ensure_future(cls.detail_parse(middle_page_url))))
+
+        for future in futures:
+            data["body"].append(await asyncio.gather(future))
+
+        return ResourceData(meta={}, data=data, link=response.url)

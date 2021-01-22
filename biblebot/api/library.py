@@ -8,6 +8,7 @@ BookDetail과 BookPhoto를 통해
 ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']의 데이터가 완성된다.
 """
 from typing import Dict, Optional, List, Tuple
+from dataclasses import dataclass
 from base64 import b64encode
 import re
 
@@ -221,7 +222,7 @@ class BookIntro:
     def parse(cls, response: Response) -> List[str]:
         soup = response.soup
         div = soup.find(class_="sponge-page-guide")
-        title = div.find(class_="sponge-book-title")
-        introduction = div.find(id_="bookIntroContent")
+        title = div.find("strong", attrs={"class": "sponge-book-title"}).get_text()
+        introduction = div.find("div", attrs={"id": "bookIntroContent"}).get_text()
 
         return [title, introduction]

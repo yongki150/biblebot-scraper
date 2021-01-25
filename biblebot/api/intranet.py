@@ -117,6 +117,7 @@ async def _post_with_semester(
 
 
 class Login(ILoginFetcher, IParser):
+    # TODO: URL 변경 유의
     URL: str = DOMAIN_NAME + "/ble_login2.aspx"
 
     @classmethod
@@ -181,7 +182,7 @@ class StudentPhoto(IParser):
         query: Dict[str, str] = {"schNo": sid}
         query_string = urlencode(query)
         url = f"{cls.URL}?{query_string}"
-        return await HTTPClient.connector.post(
+        return await HTTPClient.connector.get(
             url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
         )
 

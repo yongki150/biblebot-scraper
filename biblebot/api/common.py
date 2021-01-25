@@ -35,6 +35,7 @@ def httpdate_to_unixtime(date: str) -> int:
 def _replace_alert_message(message: str):
     message = message.strip()
     f, e = message[0], message[-1]
+
     if f == e and (f == "'" or f == '"'):
         return message.strip(f)
 
@@ -44,7 +45,12 @@ def extract_alerts(soup: BeautifulSoup) -> List[str]:
 
     result = []
     for each in script_elements:
-        for message in _ALERT_PATTERN.findall(each.text):
+        if not each.text:
+            each = each.string
+        else:
+            each = each.text
+
+        for message in _ALERT_PATTERN.findall(each):
             alert = _replace_alert_message(message)
             if alert:
                 result.append(alert)

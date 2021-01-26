@@ -117,6 +117,7 @@ async def _post_with_semester(
 
 
 class Login(ILoginFetcher, IParser):
+    # TODO: URL 변경 유의
     URL: str = DOMAIN_NAME + "/ble_login2.aspx"
 
     @classmethod
@@ -146,7 +147,17 @@ class Login(ILoginFetcher, IParser):
             return ResourceData(
                 data={"cookies": response.cookies, "iat": iat}, link=response.url
             )
-        # Login 실패
+        # TODO: 현 인트라넷 서버 과부하 상황이 없애지면 더 자세한 조건 추가할 예정
+        # Login 실패: 인트라넷 서버 과부하
+        elif response.status == 503:
+            return ErrorData(
+                error={
+                    "title": response.soup.find("h2").get_text(),
+                    "error_message": response.soup.find("p").get_text()
+                },
+                link=response.url
+            )
+        # Login 실패: Common 한 오류
         else:
             alerts: List[str] = extract_alerts(response.soup)
             alert = alerts[0] if alerts else ""
@@ -171,7 +182,7 @@ class StudentPhoto(IParser):
         query: Dict[str, str] = {"schNo": sid}
         query_string = urlencode(query)
         url = f"{cls.URL}?{query_string}"
-        return await HTTPClient.connector.post(
+        return await HTTPClient.connector.get(
             url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
         )
 

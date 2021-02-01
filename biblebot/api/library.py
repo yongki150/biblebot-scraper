@@ -10,6 +10,7 @@ BookDetail과 BookPhoto를 통해
 from typing import Dict, Optional, List, Tuple
 from dataclasses import dataclass
 from base64 import b64encode
+import unicodedata
 import re
 
 from .base import (
@@ -224,5 +225,6 @@ class BookIntro:
         div = soup.find(class_="sponge-page-guide")
         title = div.find("strong", attrs={"class": "sponge-book-title"}).get_text()
         introduction = div.find("div", attrs={"id": "bookIntroContent"}).get_text()
+        introduction = unicodedata.normalize("NFKD", introduction)
 
         return [title, introduction]

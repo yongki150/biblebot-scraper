@@ -8,8 +8,8 @@ BookDetail과 BookPhoto를 통해
 ['ISBN', '서지정보', '대출일자', '반납예정일', '대출상태', '연기신청', '도서이미지']의 데이터가 완성된다.
 """
 from typing import Dict, Optional, List, Tuple
-from dataclasses import dataclass
 from base64 import b64encode
+import unicodedata
 import re
 
 from .base import (
@@ -153,7 +153,7 @@ class BookDetail:
     @classmethod
     async def fetch(
         cls,
-        path,
+        path: str,
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -167,18 +167,23 @@ class BookDetail:
     def parse(cls, response: Response) -> List[str]:
         soup = response.soup
         isbn = soup.select("#detailtoprightnew .sponge-book-list-data")[1].text.strip()
+        title = soup.select_one(".sponge-book-title").text.strip()
         img_url = soup.select_one(".page-detail-title-image a img")["src"]
+
+        find = re.compile(r"^([^\s]*)")
+        isbn = re.search(find, isbn).group()
 
         if not re.match(r"https?://", img_url):
             img_url = None
-        return [isbn, img_url]
+
+        return [isbn, title, img_url]
 
 
 class BookPhoto:
     @classmethod
     async def fetch(
         cls,
-        photo_url,
+        photo_url: str,
         *,
         headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
@@ -234,10 +239,16 @@ class BookIntro:
         )
 
     @classmethod
-    def parse(cls, response: Response) -> List[str]:
+    def parse(cls, response: Response) -> Optional[str]:
         soup = response.soup
         div = soup.find(class_="sponge-page-guide")
-        title = div.find("strong", attrs={"class": "sponge-book-title"}).get_text()
-        introduction = div.find("div", attrs={"id": "bookIntroContent"}).get_text()
+        try:
+            introduction = div.find("div", attrs={"id": "bookIntroContent"}).get_text()
+            introduction = unicodedata.normalize("NFKD", introduction)
 
-        return [title, introduction]
+            find = re.compile(r"^(([^.]*).){2}")
+            introduction = re.search(find, introduction).group()
+        except AttributeError:
+            introduction = None
+
+        return introduction

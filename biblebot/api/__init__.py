@@ -18,6 +18,8 @@ from .kbu import IllipNotice as KbuIllipNotice
 from .mileage import Login as MileageLogin
 from .mileage import Search as MileageSearch
 from .mileage import Statement as MileageStatement
+from .mileage import SearchUseLambda as MileageSearchUseLambda
+from .mileage import LoginUseLambda as MileageLoginUseLambda
 from ._mileage import SearchParamData as MileageSearchParamData
 from ._mileage import StatementParamData as MileageStatementParamData
 from .library import Login as LibraryLogin
@@ -66,6 +68,8 @@ class MileageAPI:
     Login = MileageLogin
     Search = MileageSearch
     Statement = MileageStatement
+    SearchUseLambda = MileageSearchUseLambda
+    LoginUseLambda = MileageLoginUseLambda
 
 
 class MileageParam:

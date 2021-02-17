@@ -1,6 +1,8 @@
 from typing import Optional, Dict, List
 from abc import ABCMeta, abstractmethod
+import unicodedata
 from dataclasses import asdict
+import json
 
 from ..reqeust import Response
 from ..exceptions import ParsingError
@@ -25,6 +27,8 @@ __all__ = (
     "Login",
     "Search",
     "Statement",
+    "SearchUseLambda",
+    "LoginUseLambda",
 )
 
 DOMAIN_NAME: str = "https://asp.netusys.com"
@@ -59,13 +63,13 @@ class Login(ILoginFetcher, IParser):
 
     @classmethod
     async def fetch(
-        cls,
-        user_id: str,
-        user_pw: str,
-        *,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        **kwargs,
+            cls,
+            user_id: str,
+            user_pw: str,
+            *,
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
     ) -> Response:
         headers = headers or {}
         headers.update(cls.DEFAULT_HEADERS)
@@ -129,7 +133,7 @@ def _parse_xml_data(response: Response) -> ResourceData:
 
     return ResourceData(
         data={"head": head, "body": body},
-        meta={"total_size": total_row, "current_size": len(body), "page_n": page_num,},
+        meta={"total_size": total_row, "current_size": len(body), "page_n": page_num, },
         link=response.url,
     )
 
@@ -139,13 +143,13 @@ class Search(IParser):
 
     @classmethod
     async def fetch(
-        cls,
-        cookies: Dict[str, str],
-        search_param: Optional[SearchParamData] = None,
-        *,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        **kwargs,
+            cls,
+            cookies: Dict[str, str],
+            search_param: Optional[SearchParamData] = None,
+            *,
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
     ) -> Response:
         search_param = search_param or SearchParamData()
         response = await HTTPClient.connector.post(
@@ -173,13 +177,13 @@ class Statement(IParser):
 
     @classmethod
     async def fetch(
-        cls,
-        cookies: Dict[str, str],
-        search_param: Optional[StatementParamData] = None,
-        *,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        **kwargs,
+            cls,
+            cookies: Dict[str, str],
+            search_param: Optional[StatementParamData] = None,
+            *,
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
     ) -> Response:
         search_param = search_param or StatementParamData()
         response = await HTTPClient.connector.post(
@@ -208,3 +212,46 @@ class Statement(IParser):
             for each in result.data["body"]:
                 each[type_index] = translate_statement_type(each[type_index])
         return result
+
+
+class SearchUseLambda():
+    HTTP_API: str = "https://3yfzdh10df.execute-api.ap-northeast-2.amazonaws.com/default/Hello_Lambda"
+
+    # REST_API: str = "https://kxve4ey5nh.execute-api.ap-northeast-2.amazonaws.com/default/Hello_Lambda"
+
+    @classmethod
+    async def fetch(
+            cls,
+            cookies: Dict[str, str],
+            mileage_id: str,
+            *,
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        response = await HTTPClient.connector.post(
+            url=cls.HTTP_API,
+            body=mileage_id,
+            cookies=cookies,
+            timeout=timeout,
+            **kwargs,
+        )
+        return response
+
+    @classmethod
+    def parse(cls, response: Response):
+        return json.loads(response.text)
+
+
+class LoginUseLambda():
+    URL: str = "https://j4u0dod2uk.execute-api.ap-northeast-2.amazonaws.com/default/mileage_login"
+
+    @classmethod
+    async def fetch(
+            cls,
+            *,
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(cls.URL, timeout=timeout, **kwargs)

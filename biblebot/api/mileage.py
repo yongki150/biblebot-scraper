@@ -215,9 +215,7 @@ class Statement(IParser):
 
 
 class SearchUseLambda():
-    HTTP_API: str = "https://3yfzdh10df.execute-api.ap-northeast-2.amazonaws.com/default/Hello_Lambda"
-
-    # REST_API: str = "https://kxve4ey5nh.execute-api.ap-northeast-2.amazonaws.com/default/Hello_Lambda"
+    URL: str = "https://3yfzdh10df.execute-api.ap-northeast-2.amazonaws.com/default/Hello_Lambda"
 
     @classmethod
     async def fetch(
@@ -230,7 +228,7 @@ class SearchUseLambda():
             **kwargs,
     ) -> Response:
         response = await HTTPClient.connector.post(
-            url=cls.HTTP_API,
+            url=cls.URL,
             body=mileage_id,
             cookies=cookies,
             timeout=timeout,
@@ -239,8 +237,20 @@ class SearchUseLambda():
         return response
 
     @classmethod
-    def parse(cls, response: Response):
-        return json.loads(response.text)
+    def parse(cls, response: Response) -> APIResponseType:
+        if response.status == 500:
+            return ErrorData(
+                error={"title": response.reason},
+                link=response.url
+            )
+
+        serialized_data = json.loads(response.text)
+        try:
+            data = ResourceData(**serialized_data)
+        except TypeError:
+            data = ErrorData(**serialized_data)
+
+        return data
 
 
 class LoginUseLambda():
@@ -255,3 +265,16 @@ class LoginUseLambda():
             **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(cls.URL, timeout=timeout, **kwargs)
+
+    @classmethod
+    def parse(cls, response: Response) -> APIResponseType:
+        if response.headers["cookie"]:
+            cookie = json.loads(response.headers["cookie"])
+            text = json.loads(response.text)
+
+            return ResourceData(
+                data={"cookies": cookie, "iat": text["data"]["iat"]}, link=response.url
+            )
+        return ErrorData(
+            error={"title": "login failed!"}, link=response.url
+        )

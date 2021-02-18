@@ -27,7 +27,7 @@ __all__ = (
     "Login",
     "Search",
     "Statement",
-    "SearchUseLambda",
+    "ScrapUseLambda",
     "LoginUseLambda",
 )
 
@@ -214,12 +214,11 @@ class Statement(IParser):
         return result
 
 
-class SearchUseLambda():
-    URL: str = "https://3yfzdh10df.execute-api.ap-northeast-2.amazonaws.com/default/Hello_Lambda"
-
+class ScrapUseLambda():
     @classmethod
     async def fetch(
             cls,
+            url: str,
             cookies: Dict[str, str],
             mileage_id: str,
             *,
@@ -228,9 +227,10 @@ class SearchUseLambda():
             **kwargs,
     ) -> Response:
         response = await HTTPClient.connector.post(
-            url=cls.URL,
+            url=url,
             body=mileage_id,
             cookies=cookies,
+            headers=headers,
             timeout=timeout,
             **kwargs,
         )
@@ -264,7 +264,7 @@ class LoginUseLambda():
             timeout: Optional[float] = None,
             **kwargs,
     ) -> Response:
-        return await HTTPClient.connector.get(cls.URL, timeout=timeout, **kwargs)
+        return await HTTPClient.connector.get(cls.URL, headers=headers, timeout=timeout, **kwargs)
 
     @classmethod
     def parse(cls, response: Response) -> APIResponseType:

@@ -428,12 +428,16 @@ class Assign(IParser):
             for tr in body.find_all('tr'):
                 week_dict = dict()
                 td = tr.find_all('td')
+                try:
+                    td = [td[0].text, td[1].text, td[2].text, td[3].text, td[4].text]
+                except AttributeError:
+                    continue
 
-                week_dict['week'] = td[0].text
-                week_dict['assign_name'] = td[1].text
-                week_dict['end_day'] = td[2].text
-                week_dict['submission_status'] = td[3].text
-                week_dict['grade'] = td[4].text
+                week_dict['week'] = td[0]
+                week_dict['assign_name'] = td[1]
+                week_dict['end_day'] = td[2]
+                week_dict['submission_status'] = td[3]
+                week_dict['grade'] = td[4]
                 assign_dict[course_name].append([week_dict])
         except AttributeError:
             pass
@@ -446,7 +450,6 @@ class Assign(IParser):
     async def parse(cls, response: Response, semester: str) -> ResourceData:
         data = {'head': {'week', 'assign_name', 'end_day', 'submission_status', 'grade'},
                 'body': []}
-
         if isinstance(response, ErrorData):
             return
 
@@ -509,10 +512,13 @@ class Quiz(IParser):
             for tr in body.find_all('tr'):
                 week_dict = dict()
                 td = tr.find_all('td')
-
-                week_dict['week'] = td[0].text
-                week_dict['assign_name'] = td[1].text
-                week_dict['grade'] = td[2].text
+                try:
+                    td = [td[0].text, td[1].text, td[2].text]
+                except AttributeError:
+                    continue
+                week_dict['week'] = td[0]
+                week_dict['assign_name'] = td[1]
+                week_dict['grade'] = td[2]
 
                 quiz_dict[course_name].append(week_dict)
         except AttributeError:

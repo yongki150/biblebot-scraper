@@ -12,6 +12,8 @@ from .lms import Login as LmsLogin
 from .lms import Profile as LmsProfile
 from .lms import CourseList as LmsCourseList
 from .lms import Attendance as LmsAttendance
+from .lms import Assign as LmsAssign
+from .lms import Quiz as LmsQuiz
 from .kbu import MainNotice as KbuMainNotice
 from .kbu import ScholarshipNotice as KbuScholarshipNotice
 from .kbu import IllipNotice as KbuIllipNotice
@@ -52,6 +54,8 @@ class LmsAPI:
     Profile = LmsProfile
     CourseList = LmsCourseList
     Attendance = LmsAttendance
+    Assign = LmsAssign
+    Quiz = LmsQuiz
 
 
 class KbuAPI:

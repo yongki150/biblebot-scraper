@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Coroutine
 from collections import defaultdict
 import re
 import asyncio
@@ -398,6 +398,7 @@ class Attendance(IParser):
                 link=response.url,
             )
 
+
 class Assign(IParser):
 
     @classmethod
@@ -414,7 +415,7 @@ class Assign(IParser):
         )
 
     @classmethod
-    async def assign_parse(cls, response: Response) -> dict:
+    async def _assign_parse(cls, response: Response) -> dict:
         try:
             soup = response.soup
         except AttributeError:
@@ -442,17 +443,20 @@ class Assign(IParser):
             return assign_dict
 
     @classmethod
-    async def parse(cls, response: Response, semester: str):
+    async def parse(cls, response: Response, semester: str) -> ResourceData:
         data = {'head': {'week', 'assign_name', 'end_day', 'submission_status', 'grade'},
                 'body': []}
 
+        if isinstance(response, ErrorData):
+            return
+
         if 'cookies' in response.data:
             cookies = response.data['cookies']
-            resp = await CourseList.fetch(cookies, semester)
-            course_parse = CourseList.parse(resp)
+            course_resp = await CourseList.fetch(cookies, semester)
+            course_parse = CourseList.parse(course_resp)
 
-            assign_fetch_futures = []
-            assign_futures = []
+            assign_fetch_futures: Coroutine = []
+            assign_futures: Coroutine = []
             assign_url = ""
 
             for name in course_parse.data['courses'].keys():
@@ -461,9 +465,11 @@ class Assign(IParser):
 
                 assign_fetch_futures.append(asyncio.ensure_future(cls.fetch(assign_url, cookies)))
 
-            resp = await asyncio.gather(*assign_fetch_futures)
+            resp: Coroutine = await asyncio.gather(*assign_fetch_futures)
             for parse_future in resp:
-                assign_futures.append(asyncio.ensure_future(cls.assign_parse(parse_future)))
+                expires = parse_future.headers.get("expires", "")
+                if expires == '':
+                    assign_futures.append(asyncio.ensure_future(cls._assign_parse(parse_future)))
 
             for f in assign_futures:
                 parse = await asyncio.gather(f)
@@ -471,6 +477,7 @@ class Assign(IParser):
                     data['body'].append(parse)
 
             return ResourceData(meta={}, data=data, link=assign_url)
+        return ResourceData(meta={}, data={}, link=DOMAIN_NAME)
 
 
 class Quiz(IParser):
@@ -521,13 +528,16 @@ class Quiz(IParser):
         data = {'head': {'week', 'assign_name', 'grade'},
                 'body': []}
 
+        if isinstance(response, ErrorData):
+            return
+
         if 'cookies' in response.data:
             cookies = response.data['cookies']
-            resp = await CourseList.fetch(cookies, semester)
-            course_parse = CourseList.parse(resp)
+            coures_resp = await CourseList.fetch(cookies, semester)
+            course_parse = CourseList.parse(coures_resp)
 
-            quiz_fetch_futures = []
-            quiz_futures = []
+            quiz_fetch_futures: Coroutine = []
+            quiz_futures: Coroutine = []
             quiz_url = ""
 
             for name in course_parse.data['courses'].keys():
@@ -536,9 +546,11 @@ class Quiz(IParser):
 
                 quiz_fetch_futures.append(asyncio.ensure_future(cls.fetch(quiz_url, cookies)))
 
-            resp2 = await asyncio.gather(*quiz_fetch_futures)
-            for parse_future in resp2:
-                quiz_futures.append(asyncio.ensure_future(cls.quiz_parse(parse_future)))
+            resp: Coroutine = await asyncio.gather(*quiz_fetch_futures)
+            for parse_future in resp:
+                expires = parse_future.headers.get("expires", "")
+                if expires == '':
+                    quiz_futures.append(asyncio.ensure_future(cls.quiz_parse(parse_future)))
 
             for f in quiz_futures:
                 parse = await asyncio.gather(f)
@@ -546,6 +558,7 @@ class Quiz(IParser):
                     data['body'].append(parse)
 
             return ResourceData(meta={}, data=data, link=quiz_url)
+        return ResourceData(meta={}, data={}, link=DOMAIN_NAME)
 
 
 

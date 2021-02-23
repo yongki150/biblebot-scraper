@@ -1,6 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Dict, List, Tuple
+from collections import defaultdict
 import re
+import asyncio
+
 
 from .base import (
     ILoginFetcher,
@@ -30,6 +33,8 @@ __all__ = (
     "Profile",
     "CourseList",
     "Attendance",
+    "Assign",
+    "Quiz"
 )
 
 DOMAIN_NAME: str = "https://lms.bible.ac.kr"  # with protocol
@@ -392,3 +397,161 @@ class Attendance(IParser):
                 data={"summary": summary, "head": head, "body": body, "foot": foot},
                 link=response.url,
             )
+
+class Assign(IParser):
+
+    @classmethod
+    async def fetch(
+            cls,
+            url,
+            cookies: Dict[str, str],
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    async def assign_parse(cls, response: Response) -> dict:
+        try:
+            soup = response.soup
+        except AttributeError:
+            return None
+
+        course_name: str = soup.find('div', class_='coursename').find('h1').text
+        assign_dict = {course_name: []}
+        try:
+            body = soup.find('tbody')
+            for tr in body.find_all('tr'):
+                week_dict = dict()
+                td = tr.find_all('td')
+
+                week_dict['week'] = td[0].text
+                week_dict['assign_name'] = td[1].text
+                week_dict['end_day'] = td[2].text
+                week_dict['submission_status'] = td[3].text
+                week_dict['grade'] = td[4].text
+                assign_dict[course_name].append([week_dict])
+        except AttributeError:
+            pass
+        if len(assign_dict) == 0:
+            return None
+        else:
+            return assign_dict
+
+    @classmethod
+    async def parse(cls, response: Response, semester: str):
+        data = {'head': {'week', 'assign_name', 'end_day', 'submission_status', 'grade'},
+                'body': []}
+
+        if 'cookies' in response.data:
+            cookies = response.data['cookies']
+            resp = await CourseList.fetch(cookies, semester)
+            course_parse = CourseList.parse(resp)
+
+            assign_fetch_futures = []
+            assign_futures = []
+            assign_url = ""
+
+            for name in course_parse.data['courses'].keys():
+                _id = course_parse.data['courses'][name]
+                assign_url = DOMAIN_NAME + '/mod/assign/index.php?id=' + _id
+
+                assign_fetch_futures.append(asyncio.ensure_future(cls.fetch(assign_url, cookies)))
+
+            resp = await asyncio.gather(*assign_fetch_futures)
+            for parse_future in resp:
+                assign_futures.append(asyncio.ensure_future(cls.assign_parse(parse_future)))
+
+            for f in assign_futures:
+                parse = await asyncio.gather(f)
+                if parse[0] != None:
+                    data['body'].append(parse)
+
+            return ResourceData(meta={}, data=data, link=assign_url)
+
+
+class Quiz(IParser):
+
+    @classmethod
+    async def fetch(
+            cls,
+            url,
+            cookies: Dict[str, str],
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    async def quiz_parse(cls, response: Response):
+        try:
+            soup = response.soup
+        except AttributeError as e:
+            return None
+
+        course_name: str = soup.find('div', class_='coursename').find('h1').text
+        quiz_dict = {course_name: []}
+        try:
+            body = soup.find('tbody')
+            for tr in body.find_all('tr'):
+                week_dict = dict()
+                td = tr.find_all('td')
+
+                week_dict['week'] = td[0].text
+                week_dict['assign_name'] = td[1].text
+                week_dict['grade'] = td[2].text
+
+                quiz_dict[course_name].append(week_dict)
+        except AttributeError:
+            pass
+
+        if len(quiz_dict) == 0:
+            return None
+        else:
+            return quiz_dict
+
+    @classmethod
+    async def parse(cls, response: Response, semester: str) -> ResourceData:
+        data = {'head': {'week', 'assign_name', 'grade'},
+                'body': []}
+
+        if 'cookies' in response.data:
+            cookies = response.data['cookies']
+            resp = await CourseList.fetch(cookies, semester)
+            course_parse = CourseList.parse(resp)
+
+            quiz_fetch_futures = []
+            quiz_futures = []
+            quiz_url = ""
+
+            for name in course_parse.data['courses'].keys():
+                _id = course_parse.data['courses'][name]
+                quiz_url = DOMAIN_NAME + '/mod/quiz/index.php?id=' + _id
+
+                quiz_fetch_futures.append(asyncio.ensure_future(cls.fetch(quiz_url, cookies)))
+
+            resp2 = await asyncio.gather(*quiz_fetch_futures)
+            for parse_future in resp2:
+                quiz_futures.append(asyncio.ensure_future(cls.quiz_parse(parse_future)))
+
+            for f in quiz_futures:
+                parse = await asyncio.gather(f)
+                if parse[0] != None:
+                    data['body'].append(parse)
+
+            return ResourceData(meta={}, data=data, link=quiz_url)
+
+
+
+
+
+
+
+
+

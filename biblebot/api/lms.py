@@ -415,41 +415,33 @@ class Assign(IParser):
         )
 
     @classmethod
-    async def _assign_parse(cls, response: Response) -> dict:
+    async def _assign_parse(cls, response: Response):
         try:
             soup = response.soup
         except AttributeError:
             return None
 
-        course_name: str = soup.find('div', class_='coursename').find('h1').text
-        assign_dict = {course_name: []}
         try:
             body = soup.find('tbody')
+
+            course_name: str = soup.find('div', class_='coursename').find('h1').text
+            assign_list = []
+
             for tr in body.find_all('tr'):
-                week_dict = dict()
                 td = tr.find_all('td')
                 try:
                     td = [td[0].text, td[1].text, td[2].text, td[3].text, td[4].text]
-                except AttributeError:
+                except IndexError:
                     continue
-
-                week_dict['week'] = td[0]
-                week_dict['assign_name'] = td[1]
-                week_dict['end_day'] = td[2]
-                week_dict['submission_status'] = td[3]
-                week_dict['grade'] = td[4]
-                assign_dict[course_name].append([week_dict])
+                assign_list.append(td)
+            return course_name, assign_list
         except AttributeError:
-            pass
-        if len(assign_dict) == 0:
             return None
-        else:
-            return assign_dict
 
     @classmethod
     async def parse(cls, response: Response, semester: str) -> ResourceData:
         data = {'head': {'week', 'assign_name', 'end_day', 'submission_status', 'grade'},
-                'body': []}
+                'body': {}}
         if isinstance(response, ErrorData):
             return
 
@@ -475,10 +467,9 @@ class Assign(IParser):
                     assign_futures.append(asyncio.ensure_future(cls._assign_parse(parse_future)))
 
             for f in assign_futures:
-                parse = await asyncio.gather(f)
-                if parse[0] != None:
-                    data['body'].append(parse)
-
+                parse = (await asyncio.gather(f))[0]
+                if parse is not None:
+                    data['body'][parse[0]] = parse[1]
             return ResourceData(meta={}, data=data, link=assign_url)
         return ResourceData(meta={}, data={}, link=DOMAIN_NAME)
 
@@ -499,40 +490,34 @@ class Quiz(IParser):
         )
 
     @classmethod
-    async def quiz_parse(cls, response: Response):
+    async def _quiz_parse(cls, response: Response):
         try:
             soup = response.soup
         except AttributeError as e:
             return None
 
-        course_name: str = soup.find('div', class_='coursename').find('h1').text
-        quiz_dict = {course_name: []}
         try:
             body = soup.find('tbody')
+
+            course_name: str = soup.find('div', class_='coursename').find('h1').text
+            quiz_list = []
+
             for tr in body.find_all('tr'):
-                week_dict = dict()
                 td = tr.find_all('td')
                 try:
                     td = [td[0].text, td[1].text, td[2].text]
-                except AttributeError:
+                except IndexError:
                     continue
-                week_dict['week'] = td[0]
-                week_dict['assign_name'] = td[1]
-                week_dict['grade'] = td[2]
-
-                quiz_dict[course_name].append(week_dict)
+                quiz_list.append(td)
+            return course_name, quiz_list
         except AttributeError:
-            pass
-
-        if len(quiz_dict) == 0:
             return None
-        else:
-            return quiz_dict
+
 
     @classmethod
     async def parse(cls, response: Response, semester: str) -> ResourceData:
         data = {'head': {'week', 'assign_name', 'grade'},
-                'body': []}
+                'body': {}}
 
         if isinstance(response, ErrorData):
             return
@@ -556,14 +541,14 @@ class Quiz(IParser):
             for parse_future in resp:
                 expires = parse_future.headers.get("expires", "")
                 if expires == '':
-                    quiz_futures.append(asyncio.ensure_future(cls.quiz_parse(parse_future)))
+                    quiz_futures.append(asyncio.ensure_future(cls._quiz_parse(parse_future)))
 
             for f in quiz_futures:
-                parse = await asyncio.gather(f)
-                if parse[0] != None:
-                    data['body'].append(parse)
-
+                parse = (await asyncio.gather(f))[0]
+                if parse is not None:
+                    data['body'][parse[0]] = parse[1]
             return ResourceData(meta={}, data=data, link=quiz_url)
+
         return ResourceData(meta={}, data={}, link=DOMAIN_NAME)
 
 

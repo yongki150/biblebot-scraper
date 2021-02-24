@@ -439,39 +439,36 @@ class Assign(IParser):
             return None
 
     @classmethod
-    async def parse(cls, response: Response, semester: str) -> ResourceData:
-        data = {'head': {'week', 'assign_name', 'end_day', 'submission_status', 'grade'},
+    async def parse(cls, cookies: str, semester: str):
+        data = {'head': ['week', 'assign_name', 'end_day', 'submission_status', 'grade'],
                 'body': {}}
-        if isinstance(response, ErrorData):
-            return
 
-        if 'cookies' in response.data:
-            cookies = response.data['cookies']
-            course_resp = await CourseList.fetch(cookies, semester)
-            course_parse = CourseList.parse(course_resp)
+        course_resp = await CourseList.fetch(cookies, semester)
+        course_parse = CourseList.parse(course_resp)
+        if isinstance(course_parse, ErrorData):
+            return ErrorData(error={"title": "강의 정보를 가져 올 수 없습니다."}, link=course_resp.url)
 
-            assign_fetch_futures: Coroutine = []
-            assign_futures: Coroutine = []
-            assign_url = ""
+        assign_fetch_futures: Coroutine = []
+        assign_futures: Coroutine = []
+        assign_url = ""
 
-            for name in course_parse.data['courses'].keys():
-                _id = course_parse.data['courses'][name]
-                assign_url = DOMAIN_NAME + '/mod/assign/index.php?id=' + _id
+        for name in course_parse.data['courses'].keys():
+            _id = course_parse.data['courses'][name]
+            assign_url = DOMAIN_NAME + '/mod/assign/index.php?id=' + _id
 
-                assign_fetch_futures.append(asyncio.ensure_future(cls.fetch(assign_url, cookies)))
+            assign_fetch_futures.append(asyncio.ensure_future(cls.fetch(assign_url, cookies)))
 
-            resp: Coroutine = await asyncio.gather(*assign_fetch_futures)
-            for parse_future in resp:
-                expires = parse_future.headers.get("expires", "")
-                if expires == '':
-                    assign_futures.append(asyncio.ensure_future(cls._assign_parse(parse_future)))
+        resp: Coroutine = await asyncio.gather(*assign_fetch_futures)
+        for parse_future in resp:
+            expires = parse_future.headers.get("expires", "")
+            if expires == '':
+                assign_futures.append(asyncio.ensure_future(cls._assign_parse(parse_future)))
 
-            for f in assign_futures:
-                parse = (await asyncio.gather(f))[0]
-                if parse is not None:
-                    data['body'][parse[0]] = parse[1]
-            return ResourceData(meta={}, data=data, link=assign_url)
-        return ResourceData(meta={}, data={}, link=DOMAIN_NAME)
+        for f in assign_futures:
+            parse = (await asyncio.gather(f))[0]
+            if parse is not None:
+                data['body'][parse[0]] = parse[1]
+        return ResourceData(meta={}, data=data, link=assign_url)
 
 
 class Quiz(IParser):
@@ -515,41 +512,36 @@ class Quiz(IParser):
 
 
     @classmethod
-    async def parse(cls, response: Response, semester: str) -> ResourceData:
-        data = {'head': {'week', 'assign_name', 'grade'},
+    async def parse(cls, cookies: str, semester: str):
+        data = {'head': ['week', 'assign_name', 'grade'],
                 'body': {}}
 
-        if isinstance(response, ErrorData):
-            return
+        course_resp = await CourseList.fetch(cookies, semester)
+        course_parse = CourseList.parse(course_resp)
+        if isinstance(course_parse, ErrorData):
+            return ErrorData(error={"title": "강의 정보를 가져 올 수 없습니다."}, link=course_resp.url)
 
-        if 'cookies' in response.data:
-            cookies = response.data['cookies']
-            coures_resp = await CourseList.fetch(cookies, semester)
-            course_parse = CourseList.parse(coures_resp)
+        quiz_fetch_futures: Coroutine = []
+        quiz_futures: Coroutine = []
+        quiz_url = ""
 
-            quiz_fetch_futures: Coroutine = []
-            quiz_futures: Coroutine = []
-            quiz_url = ""
+        for name in course_parse.data['courses'].keys():
+            _id = course_parse.data['courses'][name]
+            quiz_url = DOMAIN_NAME + '/mod/quiz/index.php?id=' + _id
 
-            for name in course_parse.data['courses'].keys():
-                _id = course_parse.data['courses'][name]
-                quiz_url = DOMAIN_NAME + '/mod/quiz/index.php?id=' + _id
+            quiz_fetch_futures.append(asyncio.ensure_future(cls.fetch(quiz_url, cookies)))
 
-                quiz_fetch_futures.append(asyncio.ensure_future(cls.fetch(quiz_url, cookies)))
+        resp: Coroutine = await asyncio.gather(*quiz_fetch_futures)
+        for parse_future in resp:
+            expires = parse_future.headers.get("expires", "")
+            if expires == '':
+                quiz_futures.append(asyncio.ensure_future(cls._quiz_parse(parse_future)))
 
-            resp: Coroutine = await asyncio.gather(*quiz_fetch_futures)
-            for parse_future in resp:
-                expires = parse_future.headers.get("expires", "")
-                if expires == '':
-                    quiz_futures.append(asyncio.ensure_future(cls._quiz_parse(parse_future)))
-
-            for f in quiz_futures:
-                parse = (await asyncio.gather(f))[0]
-                if parse is not None:
-                    data['body'][parse[0]] = parse[1]
-            return ResourceData(meta={}, data=data, link=quiz_url)
-
-        return ResourceData(meta={}, data={}, link=DOMAIN_NAME)
+        for f in quiz_futures:
+            parse = (await asyncio.gather(f))[0]
+            if parse is not None:
+                data['body'][parse[0]] = parse[1]
+        return ResourceData(meta={}, data=data, link=quiz_url)
 
 
 

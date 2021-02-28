@@ -231,7 +231,7 @@ class BookIntro:
             introduction = div.find("div", attrs={"id": "bookIntroContent"}).get_text()
             introduction = unicodedata.normalize("NFKD", introduction)
 
-            find = re.compile(r"^(([^.]*).){2}")
+            find = re.compile(r"^([^.]+\.{1,3}){2}")
             introduction = re.search(find, introduction).group()
         except AttributeError:
             introduction = None

@@ -1,6 +1,5 @@
 from typing import Optional, Dict, List
 from abc import ABCMeta, abstractmethod
-import unicodedata
 from dataclasses import asdict
 import json
 
@@ -63,13 +62,13 @@ class Login(ILoginFetcher, IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            user_id: str,
-            user_pw: str,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        user_id: str,
+        user_pw: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         headers = headers or {}
         headers.update(cls.DEFAULT_HEADERS)
@@ -133,7 +132,11 @@ def _parse_xml_data(response: Response) -> ResourceData:
 
     return ResourceData(
         data={"head": head, "body": body},
-        meta={"total_size": total_row, "current_size": len(body), "page_n": page_num, },
+        meta={
+            "total_size": total_row,
+            "current_size": len(body),
+            "page_n": page_num,
+        },
         link=response.url,
     )
 
@@ -143,13 +146,13 @@ class Search(IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            cookies: Dict[str, str],
-            search_param: Optional[SearchParamData] = None,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        search_param: Optional[SearchParamData] = None,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         search_param = search_param or SearchParamData()
         response = await HTTPClient.connector.post(
@@ -177,13 +180,13 @@ class Statement(IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            cookies: Dict[str, str],
-            search_param: Optional[StatementParamData] = None,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        search_param: Optional[StatementParamData] = None,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         search_param = search_param or StatementParamData()
         response = await HTTPClient.connector.post(
@@ -214,17 +217,17 @@ class Statement(IParser):
         return result
 
 
-class ScrapUseLambda():
+class ScrapUseLambda:
     @classmethod
     async def fetch(
-            cls,
-            url: str,
-            cookies: Dict[str, str],
-            mileage_id: str,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        url: str,
+        cookies: Dict[str, str],
+        mileage_id: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         response = await HTTPClient.connector.post(
             url=url,
@@ -239,10 +242,7 @@ class ScrapUseLambda():
     @classmethod
     def parse(cls, response: Response) -> APIResponseType:
         if response.status == 500:
-            return ErrorData(
-                error={"title": response.reason},
-                link=response.url
-            )
+            return ErrorData(error={"title": response.reason}, link=response.url)
 
         serialized_data = json.loads(response.text)
         try:
@@ -253,18 +253,20 @@ class ScrapUseLambda():
         return data
 
 
-class LoginUseLambda():
+class LoginUseLambda:
     URL: str = "https://j4u0dod2uk.execute-api.ap-northeast-2.amazonaws.com/default/mileage_login"
 
     @classmethod
     async def fetch(
-            cls,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
-        return await HTTPClient.connector.get(cls.URL, headers=headers, timeout=timeout, **kwargs)
+        return await HTTPClient.connector.get(
+            cls.URL, headers=headers, timeout=timeout, **kwargs
+        )
 
     @classmethod
     def parse(cls, response: Response) -> APIResponseType:
@@ -275,6 +277,4 @@ class LoginUseLambda():
             return ResourceData(
                 data={"cookies": cookie, "iat": text["data"]["iat"]}, link=response.url
             )
-        return ErrorData(
-            error={"title": "login failed!"}, link=response.url
-        )
+        return ErrorData(error={"title": "login failed!"}, link=response.url)

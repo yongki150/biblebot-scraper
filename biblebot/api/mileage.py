@@ -27,7 +27,6 @@ __all__ = (
     "Search",
     "Statement",
     "ScrapUseLambda",
-    "LoginUseLambda",
 )
 
 DOMAIN_NAME: str = "https://asp.netusys.com"
@@ -222,18 +221,14 @@ class ScrapUseLambda:
     async def fetch(
         cls,
         url: str,
-        cookies: Dict[str, str],
         mileage_id: str,
         *,
-        headers: Optional[Dict[str, str]] = None,
         timeout: Optional[float] = None,
         **kwargs,
     ) -> Response:
         response = await HTTPClient.connector.post(
             url=url,
             body=mileage_id,
-            cookies=cookies,
-            headers=headers,
             timeout=timeout,
             **kwargs,
         )
@@ -251,30 +246,3 @@ class ScrapUseLambda:
             data = ErrorData(**serialized_data)
 
         return data
-
-
-class LoginUseLambda:
-    URL: str = "https://j4u0dod2uk.execute-api.ap-northeast-2.amazonaws.com/default/mileage_login"
-
-    @classmethod
-    async def fetch(
-        cls,
-        *,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        **kwargs,
-    ) -> Response:
-        return await HTTPClient.connector.get(
-            cls.URL, headers=headers, timeout=timeout, **kwargs
-        )
-
-    @classmethod
-    def parse(cls, response: Response) -> APIResponseType:
-        if response.headers["cookie"]:
-            cookie = json.loads(response.headers["cookie"])
-            text = json.loads(response.text)
-
-            return ResourceData(
-                data={"cookies": cookie, "iat": text["data"]["iat"]}, link=response.url
-            )
-        return ErrorData(error={"title": "login failed!"}, link=response.url)

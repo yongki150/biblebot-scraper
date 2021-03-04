@@ -415,17 +415,19 @@ class Assign(IParser):
         )
 
     @classmethod
-    async def _assign_parse(cls, response: Response):
+    def parse(cls, response: Response):
+        data = {'head': ['week', 'assign_name', 'end_day', 'submission_status', 'grade'],
+                'body': {}}
+
         try:
             soup = response.soup
         except AttributeError:
-            return None
-
+            return ErrorData(error={"title": "로그인 세션이 잘못되었습니다."}, link=response.url)
         try:
             body = soup.find('tbody')
 
             course_name: str = soup.find('div', class_='coursename').find('h1').text
-            assign_list = []
+            assign_dict: dict = {course_name: []}
 
             for tr in body.find_all('tr'):
                 td = tr.find_all('td')
@@ -433,42 +435,11 @@ class Assign(IParser):
                     td = [td[0].text, td[1].text, td[2].text, td[3].text, td[4].text]
                 except IndexError:
                     continue
-                assign_list.append(td)
-            return course_name, assign_list
+                assign_dict[course_name].append(td)
+            data['body'] = assign_dict
+            return ResourceData(meta={}, data=data, link=response.url)
         except AttributeError:
-            return None
-
-    @classmethod
-    async def parse(cls, cookies: str, semester: str):
-        data = {'head': ['week', 'assign_name', 'end_day', 'submission_status', 'grade'],
-                'body': {}}
-
-        course_resp = await CourseList.fetch(cookies, semester)
-        course_parse = CourseList.parse(course_resp)
-        if isinstance(course_parse, ErrorData):
-            return ErrorData(error={"title": "강의 정보를 가져 올 수 없습니다."}, link=course_resp.url)
-
-        assign_fetch_futures: Coroutine = []
-        assign_futures: Coroutine = []
-        assign_url = ""
-
-        for name in course_parse.data['courses'].keys():
-            _id = course_parse.data['courses'][name]
-            assign_url = DOMAIN_NAME + '/mod/assign/index.php?id=' + _id
-
-            assign_fetch_futures.append(asyncio.ensure_future(cls.fetch(assign_url, cookies)))
-
-        resp: Coroutine = await asyncio.gather(*assign_fetch_futures)
-        for parse_future in resp:
-            expires = parse_future.headers.get("expires", "")
-            if expires == '':
-                assign_futures.append(asyncio.ensure_future(cls._assign_parse(parse_future)))
-
-        for f in assign_futures:
-            parse = (await asyncio.gather(f))[0]
-            if parse is not None:
-                data['body'][parse[0]] = parse[1]
-        return ResourceData(meta={}, data=data, link=assign_url)
+            return ErrorData(error={"title": "과제가 없는 강의입니다."}, link=response.url)
 
 
 class Quiz(IParser):
@@ -487,17 +458,19 @@ class Quiz(IParser):
         )
 
     @classmethod
-    async def _quiz_parse(cls, response: Response):
+    def parse(cls, response: Response):
+        data = {'head': ['week', 'assign_name', 'end_day', 'submission_status', 'grade'],
+                'body': {}}
+
         try:
             soup = response.soup
         except AttributeError as e:
-            return None
-
+            return ErrorData(error={"title": "로그인 세션이 잘못되었습니다."}, link=response.url)
         try:
             body = soup.find('tbody')
 
             course_name: str = soup.find('div', class_='coursename').find('h1').text
-            quiz_list = []
+            quiz_dict = {course_name: []}
 
             for tr in body.find_all('tr'):
                 td = tr.find_all('td')
@@ -505,43 +478,11 @@ class Quiz(IParser):
                     td = [td[0].text, td[1].text, td[2].text]
                 except IndexError:
                     continue
-                quiz_list.append(td)
-            return course_name, quiz_list
+                quiz_dict[course_name].append(td)
+            data['body'] = quiz_dict
+            return ResourceData(meta={}, data=data, link=response.url)
         except AttributeError:
-            return None
-
-
-    @classmethod
-    async def parse(cls, cookies: str, semester: str):
-        data = {'head': ['week', 'assign_name', 'grade'],
-                'body': {}}
-
-        course_resp = await CourseList.fetch(cookies, semester)
-        course_parse = CourseList.parse(course_resp)
-        if isinstance(course_parse, ErrorData):
-            return ErrorData(error={"title": "강의 정보를 가져 올 수 없습니다."}, link=course_resp.url)
-
-        quiz_fetch_futures: Coroutine = []
-        quiz_futures: Coroutine = []
-        quiz_url = ""
-
-        for name in course_parse.data['courses'].keys():
-            _id = course_parse.data['courses'][name]
-            quiz_url = DOMAIN_NAME + '/mod/quiz/index.php?id=' + _id
-
-            quiz_fetch_futures.append(asyncio.ensure_future(cls.fetch(quiz_url, cookies)))
-
-        resp: Coroutine = await asyncio.gather(*quiz_fetch_futures)
-        for parse_future in resp:
-            expires = parse_future.headers.get("expires", "")
-            if expires == '':
-                quiz_futures.append(asyncio.ensure_future(cls._quiz_parse(parse_future)))
-
-        for f in quiz_futures:
-            parse = (await asyncio.gather(f))[0]
-            if parse is not None:
-                data['body'][parse[0]] = parse[1]
-        return ResourceData(meta={}, data=data, link=quiz_url)
+            return ErrorData(error={"title": "과제가 없는 강의입니다."}, link=response.url)
 
 
 

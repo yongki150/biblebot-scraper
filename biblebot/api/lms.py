@@ -459,7 +459,7 @@ class Quiz(IParser):
 
     @classmethod
     def parse(cls, response: Response):
-        data = {'head': ['week', 'assign_name', 'end_day', 'submission_status', 'grade'],
+        data = {'head': ['week', 'assign_name', 'grade'],
                 'body': {}}
 
         try:
@@ -482,7 +482,7 @@ class Quiz(IParser):
             data['body'] = quiz_dict
             return ResourceData(meta={}, data=data, link=response.url)
         except AttributeError:
-            return ErrorData(error={"title": "과제가 없는 강의입니다."}, link=response.url)
+            return ErrorData(error={"title": "퀴즈가 없는 강의입니다."}, link=response.url)
 
 
 

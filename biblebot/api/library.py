@@ -32,6 +32,7 @@ __all__ = (
     "BookPhoto",
     "NewBookPath",
     "BookIntro",
+    "NewBookPathChange",
 )
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
@@ -184,6 +185,7 @@ class BookPhoto:
             return ResourceData(data={"raw_image": response.raw}, link=response.url)
 
 
+# TODO: 21-1학기 현재 사용하지 않지만 상황을 봐서 남겨둔 코드
 class NewBookPath:
     URL: str = DOMAIN_NAME + "/Search/New"
 
@@ -237,3 +239,24 @@ class BookIntro:
             introduction = None
 
         return introduction
+
+
+class NewBookPathChange:
+    @classmethod
+    async def fetch(
+        cls,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            DOMAIN_NAME, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def parse(cls, response: Response) -> List[str]:
+        soup = response.soup
+        ul = soup.select_one("#book-new > div ul")
+        tag_list = ul.select("li")
+        path_list = [tag.select_one("a")["href"] for tag in tag_list]
+        return path_list

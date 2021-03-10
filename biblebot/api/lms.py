@@ -1,6 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Coroutine
+from collections import defaultdict
 import re
+import asyncio
+
 
 from .base import (
     ILoginFetcher,
@@ -30,6 +33,8 @@ __all__ = (
     "Profile",
     "CourseList",
     "Attendance",
+    "Assign",
+    "Quiz"
 )
 
 DOMAIN_NAME: str = "https://lms.bible.ac.kr"  # with protocol
@@ -392,3 +397,98 @@ class Attendance(IParser):
                 data={"summary": summary, "head": head, "body": body, "foot": foot},
                 link=response.url,
             )
+
+
+class Assign(IParser):
+
+    @classmethod
+    async def fetch(
+            cls,
+            url,
+            cookies: Dict[str, str],
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def parse(cls, response: Response):
+        data = {'head': ['week', 'assign_name', 'end_day', 'submission_status', 'grade'],
+                'body': {}}
+
+        try:
+            soup = response.soup
+        except AttributeError:
+            return ErrorData(error={"title": "로그인 세션이 잘못되었습니다."}, link=response.url)
+        try:
+            body = soup.find('tbody')
+
+            course_name: str = soup.find('div', class_='coursename').find('h1').text
+            assign_dict: dict = {course_name: []}
+
+            for tr in body.find_all('tr'):
+                td = tr.find_all('td')
+                try:
+                    td = [td[0].text, td[1].text, td[2].text, td[3].text, td[4].text]
+                except IndexError:
+                    continue
+                assign_dict[course_name].append(td)
+            data['body'] = assign_dict
+            return ResourceData(meta={}, data=data, link=response.url)
+        except AttributeError:
+            return ErrorData(error={"title": "과제가 없는 강의입니다."}, link=response.url)
+
+
+class Quiz(IParser):
+
+    @classmethod
+    async def fetch(
+            cls,
+            url,
+            cookies: Dict[str, str],
+            headers: Optional[Dict[str, str]] = None,
+            timeout: Optional[float] = None,
+            **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            url, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def parse(cls, response: Response):
+        data = {'head': ['week', 'assign_name', 'grade'],
+                'body': {}}
+
+        try:
+            soup = response.soup
+        except AttributeError as e:
+            return ErrorData(error={"title": "로그인 세션이 잘못되었습니다."}, link=response.url)
+        try:
+            body = soup.find('tbody')
+
+            course_name: str = soup.find('div', class_='coursename').find('h1').text
+            quiz_dict = {course_name: []}
+
+            for tr in body.find_all('tr'):
+                td = tr.find_all('td')
+                try:
+                    td = [td[0].text, td[1].text, td[2].text]
+                except IndexError:
+                    continue
+                quiz_dict[course_name].append(td)
+            data['body'] = quiz_dict
+            return ResourceData(meta={}, data=data, link=response.url)
+        except AttributeError:
+            return ErrorData(error={"title": "퀴즈가 없는 강의입니다."}, link=response.url)
+
+
+
+
+
+
+
+
+

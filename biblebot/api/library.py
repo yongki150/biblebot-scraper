@@ -204,7 +204,9 @@ class NewBookPath:
     def parse(cls, response: Response) -> List[str]:
         soup = response.soup
         new_book_path_list = soup.select(".sponge-newbook-list > li")
-        new_book_path_list = [book.select_one("a")["href"] for book in new_book_path_list]
+        new_book_path_list = [
+            book.select_one("a")["href"] for book in new_book_path_list
+        ]
 
         return new_book_path_list
 
@@ -231,12 +233,19 @@ class BookIntro:
         div = soup.find(class_="sponge-page-guide")
         try:
             introduction = div.find("div", attrs={"id": "bookIntroContent"}).get_text()
-            introduction = unicodedata.normalize("NFKD", introduction)
-
-            find = re.compile(r"^([^.]+\.{1,3}){2}")
-            introduction = re.search(find, introduction).group()
         except AttributeError:
-            introduction = None
+            return None
+
+        introduction = unicodedata.normalize("NFKD", introduction)
+        count = 1
+        while len(introduction) > 300:
+            temp = re.search(fr"^([^.]+\.{{1,3}}){{{count}}}", introduction).group()
+            if len(temp) < 100:
+                count += 1
+                continue
+            else:
+                introduction = temp
+                break
 
         return introduction
 

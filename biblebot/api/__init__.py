@@ -27,6 +27,7 @@ from .library import BookDetail as LibraryBookDetail
 from .library import BookPhoto as LibraryBookPhoto
 from .library import NewBookPath as LibraryNewBookPath
 from .library import BookIntro as LibraryBookIntro
+from .library import NewBookPathChange as LibraryNewBookPathChange
 
 
 __all__ = (
@@ -82,3 +83,4 @@ class LibraryAPI:
     BookPhoto = LibraryBookPhoto
     NewBookPath = LibraryNewBookPath
     BookIntro = LibraryBookIntro
+    NewBookPathChange = LibraryNewBookPathChange

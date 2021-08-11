@@ -181,11 +181,10 @@ class BookPhoto:
 
     @classmethod
     def parse(cls, response: Response) -> APIResponseType:
-        if response.headers["content-type"][:5] == "image":
+        if response.headers["content-type"] == "image/*":
             return ResourceData(data={"raw_image": response.raw}, link=response.url)
 
 
-# TODO: 21-1학기 현재 사용하지 않지만 상황을 봐서 남겨둔 코드
 class NewBookPath:
     URL: str = DOMAIN_NAME + "/Search/New"
 

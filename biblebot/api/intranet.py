@@ -222,7 +222,7 @@ class Chapel(ISemesterFetcher, IParser):
     @classmethod
     def _parse_summary(cls, response: Response) -> Dict[str, str]:
         soup = response.soup
-        tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        tbody = soup.find("tbody", attrs={"class": "mbody"})
         if not tbody:
             raise ParsingError("채플 요약 테이블을 찾을 수 없습니다.", response)
 
@@ -234,15 +234,28 @@ class Chapel(ISemesterFetcher, IParser):
             day_count = re.search(r"\d+", value)
             summary[key] = str(day_count.group()) if day_count else ""
 
+        summary["지각"] = summary.pop("출석일수")
+        summary["출석"] = summary.pop("규정일수")
+        summary["규정일수"] = summary.pop("채플 유형")
+        summary["확정"] = summary.pop("지각일수")
+        summary.pop("확정일수")
+
+        tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        th = tbody.find("th").get_text(strip=True)
+        td = tbody.find("td").get_text(strip=True)
+        summary[th] = str(re.search(r"\d+", td).group())
         return summary
 
     @classmethod
     def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
         soup = response.soup
         thead = soup.find("thead", attrs={"class": "mhead"})
-        tbody = soup.find("tbody", attrs={"class": "mbody"})
-
-        return parse_table(response, thead, tbody)
+        tbody = soup.find_all("tbody", attrs={"class": "mbody"})[1]
+        head, body = parse_table(response, thead, tbody)
+        del head[5]
+        for each in body:
+            del each[5]
+        return head, body
 
     @classmethod
     @_ParserPrecondition

@@ -227,18 +227,18 @@ class Chapel(ISemesterFetcher, IParser):
             raise ParsingError("채플 요약 테이블을 찾을 수 없습니다.", response)
 
         summary: Dict[str, str] = {}
-        for th, td in zip(tbody.find_all("th"), tbody.find_all("td")):
+        th_list = tbody.find_all("th")[1:]
+        td_list = tbody.find_all("td")[:-1]
+        for th, td in zip(th_list, td_list):
             key = th.get_text(strip=True)
             value = td.get_text(strip=True)
 
             day_count = re.search(r"\d+", value)
             summary[key] = str(day_count.group()) if day_count else ""
 
-        summary["지각"] = summary.pop("출석일수")
-        summary["출석"] = summary.pop("규정일수")
-        summary["규정일수"] = summary.pop("채플 유형")
-        summary["확정"] = summary.pop("지각일수")
-        summary.pop("확정일수")
+        summary["지각"] = summary.pop("지각일수")
+        summary["출석"] = summary.pop("출석일수")
+        summary["확정"] = summary.pop("확정일수")
 
         tbody = soup.find("tbody", attrs={"class": "viewbody"})
         th = tbody.find("th").get_text(strip=True)

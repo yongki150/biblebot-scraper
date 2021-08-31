@@ -66,9 +66,10 @@ def _extract_semester(response: Response) -> SemesterData:
     options = select_tag.find_all("option", selected=True)
     if not options:
         raise ParsingError("학기 옵션 태그를 찾을 수 없습니다.", response)
+
     try:
         selectables: List[str] = [
-            opt.attrs["value"] for opt in select_tag.find_all("option") if opt.attrs["value"][-1] is not "3" and "4"
+            opt.attrs["value"] for opt in select_tag.find_all("option")
         ]
         selected: str = select_tag.find("option", selected=True).attrs["value"]
     except (KeyError, AttributeError):
@@ -99,8 +100,6 @@ async def _post_with_semester(
         return response
 
     semester_info: SemesterData = _extract_semester(response)
-    if semester[-1] is "3" and "4":
-        semester = semester_info.selectable[0]
     if (
         semester
         and semester != semester_info.selected

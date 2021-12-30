@@ -129,6 +129,9 @@ class Login(ILoginFetcher, IParser):
         view_state = soup.find("input", {"id": "__VIEWSTATE"}).get('value')
         event_validation = soup.find("input", {"id": "__EVENTVALIDATION"}).get('value')
 
+        if not (view_state or event_validation):
+            raise ParsingError("페이 로드에 파싱할 extra 값이 없습니다. ", response)
+
         return view_state, event_validation
 
     @classmethod

@@ -44,10 +44,7 @@ def extract_alerts(soup: BeautifulSoup) -> List[str]:
 
     result = []
     for each in script_elements:
-        if not each.text:
-            each = each.string
-        else:
-            each = each.text
+        each = each.text if each.text else str(each.string)
 
         for message in _ALERT_PATTERN.findall(each):
             alert = _replace_alert_message(message)

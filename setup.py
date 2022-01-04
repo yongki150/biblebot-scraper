@@ -6,7 +6,7 @@ from distutils.util import convert_path
 if sys.version_info < (3, 7):
     raise RuntimeError("biblebot requires Python 3.7+")
 
-with open("README.md", "r") as f:
+with open("README.md", "r", encoding="UTF-8") as f:
     long_description = f.read()
 
 about = {}

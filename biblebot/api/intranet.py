@@ -117,7 +117,22 @@ async def _post_with_semester(
 
 
 class Login(ILoginFetcher, IParser):
-    URL: str = DOMAIN_NAME + "/ble_login2.aspx"
+    URL: str = DOMAIN_NAME + "/ble_login3.aspx"
+
+    @classmethod
+    async def _get_extra_payload(
+        cls
+    ) -> Tuple[str, str]:
+        response = await HTTPClient.connector.get(cls.URL)
+
+        soup = response.soup
+        view_state = soup.find("input", {"id": "__VIEWSTATE"}).get('value')
+        event_validation = soup.find("input", {"id": "__EVENTVALIDATION"}).get('value')
+
+        if not (view_state or event_validation):
+            raise ParsingError("페이 로드에 파싱할 extra 값이 없습니다. ", response)
+
+        return view_state, event_validation
 
     @classmethod
     async def fetch(
@@ -129,7 +144,14 @@ class Login(ILoginFetcher, IParser):
         timeout: Optional[float] = None,
         **kwargs,
     ) -> Response:
-        form = {"Txt_1": user_id, "Txt_2": user_pw, "use_type": "2"}
+        view_state, event_validation = await cls._get_extra_payload()
+
+        form = {
+            "Txt_1": user_id,
+            "Txt_2": user_pw,
+            "__VIEWSTATE": view_state,
+            "__EVENTVALIDATION": event_validation
+        }
         return await HTTPClient.connector.post(
             cls.URL, headers=headers, body=form, timeout=timeout, **kwargs
         )
@@ -138,7 +160,7 @@ class Login(ILoginFetcher, IParser):
     def parse(cls, response: Response) -> APIResponseType:
         """
         로그인 성공: status 302, location header 포함, 리다이렉트 메시지를 body에 포함
-        로그인 실패: status 200, location header 미포함, alert 메시지룰 body에 포함
+        로그인 실패: status 200, location header 미포함, alert 메시지를 body에 포함
         """
         # Login 성공
         if response.status == 302:
@@ -146,7 +168,16 @@ class Login(ILoginFetcher, IParser):
             return ResourceData(
                 data={"cookies": response.cookies, "iat": iat}, link=response.url
             )
-        # Login 실패
+        # Login 실패: 인트라넷 서버 과부하
+        elif response.status == 503:
+            return ErrorData(
+                error={
+                    "title": response.soup.find("h2").get_text(),
+                    "error_message": response.soup.find("p").get_text()
+                },
+                link=response.url
+            )
+        # Login 실패: Common 한 오류
         else:
             alerts: List[str] = extract_alerts(response.soup)
             alert = alerts[0] if alerts else ""

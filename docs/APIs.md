@@ -178,7 +178,7 @@ def parse(cls, response: Response) -> APIResponseType:
 ```python
 async def main():
     # Login
-    resp = await LmsAPI.Login.fetch("ramming125", "gksrlghd12")
+    resp = await LmsAPI.Login.fetch("아이디입력", "패스워드입력")
     result = LmsAPI.Login.parse(resp)
     cookie = result.data["cookies"]
 
@@ -255,7 +255,7 @@ from biblebot import LmsAPI
 
 async def main():
     # Login
-    resp = await LmsAPI.Login.fetch("ramming125", "gksrlghd12")
+    resp = await LmsAPI.Login.fetch("아이디입력", "패스워드입력")
     result = LmsAPI.Login.parse(resp)
     cookie = result.data["cookies"]
 

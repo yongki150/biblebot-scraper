@@ -28,7 +28,7 @@ $ pip install 'biblebot[http]'
 ## Requirements
 - `beautifulsoup4`: html과 xml 에서 데이터를 추출하기 위해 사용합니다.
 - `aiohttp`: HTTP 요청을 위해 사용합니다. (OPTIONAL)
-
+- `aiounittest`: API 테스트를 위해 사용합니다. (OPTIONAL)
 
 HTTP 요청을 위해 HTTP 요청 패키지가 필요합니다. `aiohttp` 또는 `requests` 패키지가 존재할 경우 자동으로 인식하여 사용합니다.
 

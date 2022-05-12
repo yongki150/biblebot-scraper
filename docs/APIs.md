@@ -943,7 +943,7 @@ from biblebot import LibraryAPI
 
 async def main():
     # Login
-    response = await LibraryAPI.Login.fetch("ygflove95", "dms!15096")
+    response = await LibraryAPI.Login.fetch("아이디", "비밀번호")
     result = LibraryAPI.Login.parse(response)
     cookie = result.data["cookies"]
 

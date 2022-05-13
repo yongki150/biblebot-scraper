@@ -8,13 +8,13 @@
 
 이 패키지를 바탕으로, **성서봇** 모바일 애플리케이션([Android](https://play.google.com/store/apps/details?id=com.blogspot.ramming125.kbubot&hl=ko) / [IOS](https://apps.apple.com/kr/app/성서봇/id1441276020))이 한국성서대학교학생들에게 2018년부터 실서비스 되고 있습니다.  
 
-이 패키지는 네 가지 웹사이트에 대한 스크래이퍼를 제공합니다.
+이 패키지는 다섯 가지 웹사이트에 대한 스크래이퍼를 제공합니다.
 
 1. [한국성서대학교 인트라넷](https://kbuis.bible.ac.kr/) 스크래이퍼  
 2. [한국성서대학교 LMS](https://lms.bible.ac.kr/) 스크래이퍼
 3. [한국성서대학교 홈페이지](https://www.bible.ac.kr/) 스크래이퍼  
 4. [OKPOS 마일리지 시스템](https://asp.netusys.com/) 스크래이퍼  
-
+5. [한국성서대학교 도서관](https://lib.bible.ac.kr/) 스크래이퍼
 
 
 
@@ -229,7 +229,7 @@ async def main():
     result = IntranetAPI.Login.parse(resp)
     cookie = result.data["cookies"]
 
-		# Get course information
+    # Get course information
     resp = await IntranetAPI.Course.fetch(cookies=cookie, semester="20201")
     result = IntranetAPI.Course.parse(resp)
     pprint(result.data)

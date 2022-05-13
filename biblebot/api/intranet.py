@@ -399,6 +399,7 @@ class GraduationExam(IParser):
 
 
     @classmethod
+    @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         head, body = cls._parse_main_table(response)
         return ResourceData(

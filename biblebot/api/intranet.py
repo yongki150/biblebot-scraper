@@ -373,6 +373,7 @@ class Course(ISemesterFetcher, IParser):
             },
         )
 
+
 class GraduationExam(IParser):
     URL: str = DOMAIN_NAME + "/SchoolRegMng/SR050.aspx"
 
@@ -397,11 +398,8 @@ class GraduationExam(IParser):
 
         return parse_table(response, thead, tbody)
 
-
     @classmethod
     @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         head, body = cls._parse_main_table(response)
-        return ResourceData(
-            data={"head": head, "body": body},
-            link=response.url)
+        return ResourceData(data={"head": head, "body": body}, link=response.url)

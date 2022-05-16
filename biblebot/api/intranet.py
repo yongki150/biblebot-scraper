@@ -30,6 +30,7 @@ __all__ = (
     "Chapel",
     "Timetable",
     "Course",
+    "TotalAcceptanceStatus",
 )
 
 DOMAIN_NAME: str = "https://kbuis.bible.ac.kr"  # with protocol
@@ -371,3 +372,33 @@ class Course(ISemesterFetcher, IParser):
                 "selectable": response.etc["semester"].selectable,
             },
         )
+
+class TotalAcceptanceStatus(IParser):
+    URL: str = DOMAIN_NAME + "/GradeMng/GD010.aspx"
+
+    @classmethod
+    async def fetch(
+        cls,
+        cookies: Dict[str, str],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            cls.URL, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
+        soup = response.soup
+        thead = soup.find("thead", attrs={"class": "mhead"})
+        tbody = soup.find("tbody", attrs={"class": "viewscore"})
+
+        return parse_table(response, thead, tbody)
+
+
+    @classmethod
+    def parse(cls, response: Response) -> APIResponseType:
+        head, body = cls._parse_main_table(response)
+        return ResourceData(data={"head": head, "body": body}, link=response.url)

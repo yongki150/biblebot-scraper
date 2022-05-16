@@ -405,18 +405,27 @@ class TotalAcceptanceStatus(IParser):
         return summary
 
 
-    # @classmethod
-    # def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
-    #     soup = response.soup
-    #     thead = soup.find("thead", attrs={"class": "mhead"})
-    #     tbody = soup.find("tbody", attrs={"class": "viewscore"})
-    #
-    #     return parse_table(response, thead, tbody)
-    #
+    @classmethod
+    def _parse_main_table(cls, response: Response) -> str:
+        soup = response.soup
+        tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        thead = []
+
+        for a in tbody.find('tr'):
+            thead.append(a.get_text())
+
+        print(thead)
+
+        print(tbody.find_all('th'))
+        return tbody
+
 
 
     @classmethod
     @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
-        head, body = cls._parse_main_table(response)
-        return ResourceData(data={"head": head, "body": body}, link=response.url)
+        summary = cls._parse_summary(response)
+        tbody = cls._parse_main_table(response)
+        return ResourceData(
+            data={"summary": summary, "tbody": tbody},
+            link=response.url)

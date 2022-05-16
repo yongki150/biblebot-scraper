@@ -390,15 +390,33 @@ class TotalAcceptanceStatus(IParser):
         )
 
     @classmethod
-    def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
+    def _parse_summary(cls, response: Response) -> Dict[str, str]:
         soup = response.soup
-        thead = soup.find("thead", attrs={"class": "mhead"})
-        tbody = soup.find("tbody", attrs={"class": "viewscore"})
+        table = soup.find("table", attrs={"class": "viewscore"})
 
-        return parse_table(response, thead, tbody)
+        summary: Dict[str, str] ={}
+
+        for td in table.find("tr").find_all('td'):
+            if (td.get_text() == "\xa0 "):
+                continue
+            key, value = td.get_text()[1:].split(" : ")
+            summary[key] = value
+
+        return summary
+
+
+    # @classmethod
+    # def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
+    #     soup = response.soup
+    #     thead = soup.find("thead", attrs={"class": "mhead"})
+    #     tbody = soup.find("tbody", attrs={"class": "viewscore"})
+    #
+    #     return parse_table(response, thead, tbody)
+    #
 
 
     @classmethod
+    @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         head, body = cls._parse_main_table(response)
         return ResourceData(data={"head": head, "body": body}, link=response.url)

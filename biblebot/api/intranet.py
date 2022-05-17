@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Dict, List, Tuple
+from collections import defaultdict
 import re
 
 from .base import (
@@ -374,7 +375,7 @@ class Course(ISemesterFetcher, IParser):
         )
 
 class TotalAcceptanceStatus(IParser):
-    URL: str = DOMAIN_NAME + "/GradeMng/GD010.aspx"
+    URL: str = DOMAIN_NAME + "/GradeMng/GD010.aspx?viewRef=0"
 
     @classmethod
     async def fetch(
@@ -406,9 +407,9 @@ class TotalAcceptanceStatus(IParser):
 
 
     @classmethod
-    def _parse_main_table(cls, response: Response) -> str:
+    def _parse_main_table(cls, response: Response) -> Dict[str, List]:
         soup = response.soup
-        tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        tbody = soup.find("table", attrs={"class": "ViewTable"})
         thead = []
 
         for a in tbody.find('tr'):
@@ -416,7 +417,24 @@ class TotalAcceptanceStatus(IParser):
 
         print(thead)
 
-        print(tbody.find_all('th'))
+        dict = defaultdict(list)
+
+        for i in tbody.find_all('tr'):
+            columnList = []
+            if(i.find('th', attrs={"rowspan":""})):
+                continue
+            else:
+                if(i.find('th')):
+                    key = i.find('th').text
+                    dict[key]
+                for a in i.find_all('td'):
+                    if(a.get_text() == ""):
+                        continue
+                    columnList.append(a.get_text())
+                dict[key].append(columnList)
+        print(dict)
+
+
         return tbody
 
 

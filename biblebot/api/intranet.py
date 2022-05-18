@@ -80,13 +80,13 @@ def _extract_semester(response: Response) -> SemesterData:
 
 
 async def _post_with_semester(
-        url,
-        cookies: Dict[str, str],
-        semester: Optional[str] = None,
-        *,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
-        **kwargs,
+    url,
+    cookies: Dict[str, str],
+    semester: Optional[str] = None,
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
 ) -> Response:
     """ 인트라넷에서 특정 학기의 정보 조회를 위한 메서드
 
@@ -103,9 +103,9 @@ async def _post_with_semester(
 
     semester_info: SemesterData = _extract_semester(response)
     if (
-            semester
-            and semester != semester_info.selected
-            and semester in semester_info.selectable
+        semester
+        and semester != semester_info.selected
+        and semester in semester_info.selectable
     ):
         body = extract_hidden_tags(response.soup)
         body[_SEMESTER_KEY] = semester
@@ -123,7 +123,7 @@ class Login(ILoginFetcher, IParser):
 
     @classmethod
     async def _get_extra_payload(
-            cls
+        cls
     ) -> Tuple[str, str]:
         response = await HTTPClient.connector.get(cls.URL)
 
@@ -138,13 +138,13 @@ class Login(ILoginFetcher, IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            user_id: str,
-            user_pw: str,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        user_id: str,
+        user_pw: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         view_state, event_validation = await cls._get_extra_payload()
 
@@ -193,13 +193,13 @@ class StudentPhoto(IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            cookies: Dict[str, str],
-            sid: str,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        sid: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         query: Dict[str, str] = {"schNo": sid}
         query_string = urlencode(query)
@@ -228,13 +228,13 @@ class Chapel(ISemesterFetcher, IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            cookies: Dict[str, str],
-            semester: Optional[str] = None,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        semester: Optional[str] = None,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await _post_with_semester(
             cls.URL, cookies, semester, headers=headers, timeout=timeout, **kwargs
@@ -272,7 +272,7 @@ class Chapel(ISemesterFetcher, IParser):
         head, body = cls._parse_main_table(response)
 
         return ResourceData(
-            data={"summary": summary, "head": head, "body": body, },
+            data={"summary": summary, "head": head, "body": body,},
             link=response.url,
             meta={
                 "selected": response.etc["semester"].selected,
@@ -286,13 +286,13 @@ class Timetable(ISemesterFetcher, IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            cookies: Dict[str, str],
-            semester: Optional[str] = None,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        semester: Optional[str] = None,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await _post_with_semester(
             cls.URL, cookies, semester, headers=headers, timeout=timeout, **kwargs
@@ -341,13 +341,13 @@ class Course(ISemesterFetcher, IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            cookies: Dict[str, str],
-            semester: Optional[str] = None,
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        semester: Optional[str] = None,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await _post_with_semester(
             cls.URL, cookies, semester, headers=headers, timeout=timeout, **kwargs
@@ -380,12 +380,12 @@ class TotalAcceptanceStatus(IParser):
 
     @classmethod
     async def fetch(
-            cls,
-            cookies: Dict[str, str],
-            *,
-            headers: Optional[Dict[str, str]] = None,
-            timeout: Optional[float] = None,
-            **kwargs,
+        cls,
+        cookies: Dict[str, str],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
     ) -> Response:
         return await HTTPClient.connector.get(
             cls.URL, cookies=cookies, headers=headers, timeout=timeout, **kwargs

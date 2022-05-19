@@ -410,6 +410,7 @@ class TotalAcceptanceStatus(IParser):
     def _parse_main_table(cls, response: Response) -> Dict[str, List]:
         soup = response.soup
         tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        key = ''
         courses_taken = defaultdict(list)
 
         for tr in tbody.find_all('tr'):
@@ -419,20 +420,20 @@ class TotalAcceptanceStatus(IParser):
             else:
                 if tr.find('th'):
                     key = tr.find('th').text
-                    courses_taken[key]
                 for td in tr.find_all('td'):
                     if td.get_text() == "":
                         continue
                     division.append(td.get_text())
                 courses_taken[key].append(division)
 
-        return courses_taken
+        return dict(courses_taken)
 
     @classmethod
     @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         summary = cls._parse_summary(response)
-        tbody = cls._parse_main_table(response)
+        head = ["이수과목", "학점", "등급", "학년도학기"]
+        body = cls._parse_main_table(response)
         return ResourceData(
-            data={"summary": summary, "tbody": tbody},
+            data={"summary": summary, "head": head, "body": body},
             link=response.url)

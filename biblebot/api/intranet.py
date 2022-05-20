@@ -407,6 +407,17 @@ class TotalAcceptanceStatus(IParser):
         return summary
 
     @classmethod
+    def _parse_head(cls, response: Response) -> List:
+        soup = response.soup
+        tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        head = []
+
+        for i in range(3, 7):
+            head.append(tbody.find('tr').find_all('th')[i].get_text())
+
+        return head
+
+    @classmethod
     def _parse_main_table(cls, response: Response) -> Dict[str, List]:
         soup = response.soup
         tbody = soup.find("tbody", attrs={"class": "viewbody"})
@@ -431,7 +442,7 @@ class TotalAcceptanceStatus(IParser):
     @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
         summary = cls._parse_summary(response)
-        head = ["이수과목", "학점", "등급", "학년도학기"]
+        head = cls._parse_head(response)
         body = cls._parse_main_table(response)
         return ResourceData(
             data={"summary": summary, "head": head, "body": body},

@@ -417,14 +417,13 @@ class TotalAcceptanceStatus(IParser):
             division = []
             if tr.find('th', attrs={"rowspan": ""}):
                 continue
-            else:
-                if tr.find('th'):
-                    key = tr.find('th').text
-                for td in tr.find_all('td'):
-                    if td.get_text() == "":
-                        continue
-                    division.append(td.get_text())
-                courses_taken[key].append(division)
+            if tr.find('th'):
+                key = tr.find('th').text
+            for td in tr.find_all('td'):
+                if td.get_text() == "":
+                    continue
+                division.append(td.get_text())
+            courses_taken[key].append(division)
 
         return dict(courses_taken)
 

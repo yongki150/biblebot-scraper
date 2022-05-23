@@ -391,7 +391,8 @@ class GraduationExam(IParser):
         return await HTTPClient.connector.get(
             cls.URL, cookies=cookies, headers=headers, timeout=timeout, **kwargs
         )
-    
+
+    @classmethod
     def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
         soup = response.soup
         thead = soup.find("thead", attrs={"class": "mhead"})

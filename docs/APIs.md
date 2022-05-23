@@ -537,6 +537,63 @@ def parse(cls, response: Response) -> APIResponseType:
 
 
 
+#### <a href="#id1_2_5" name="Intranet_Course">class biblebot.IntranetAPI.GraduationExam</a>
+
+> 졸업시험 합격 여부 정보를 가져오는 클래스
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    cookies: Dict[str, str],
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter | Description                                                |
+| --------- | ---------------------------------------------------------- |
+| cookies   | 로그인시 얻은 쿠키                                         |
+
+
+
+#### <a href="#id1_2_5" name="Intranet_Course">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
+
+> 전체 이수현황 정보를 가져오는 클래스
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    cookies: Dict[str, str],
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter | Description                                                |
+| --------- | ---------------------------------------------------------- |
+| cookies   | 로그인시 얻은 쿠키                                         |
+
+
 
 ### <a href="#id1_3" name="KBU">KBU API</a>
 

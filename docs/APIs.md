@@ -14,8 +14,8 @@
     - <a href="#Intranet_Chapel" name="id1_2_3">class biblebot.IntranetAPI.Chapel</a>
     - <a href="#Intranet_Timetable" name="id1_2_4">class biblebot.IntranetAPI.Timetable</a>
     - <a href="#Intranet_Course" name="id1_2_5">class biblebot.IntranetAPI.Course</a>
-    - <a href="#Intranet_Course" name="id1_2_6">class biblebot.IntranetAPI.GraduationExam</a>
-    - <a href="#Intranet_Course" name="id1_2_7">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
+    - <a href="#Intranet_GraduationExam" name="id1_2_6">class biblebot.IntranetAPI.GraduationExam</a>
+    - <a href="#Intranet_TotalAcceptanceStatus" name="id1_2_7">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
   - <a href="#KBU" name="id1_3">KBU API</a>
     - <a href="#KBU_MainNotice" name="id1_3_1">class biblebot.KbuAPI.MainNotice</a>
     - <a href="#KBU_ScholarshipNotice" name="id1_3_2">class biblebot.KbuAPI.ScholarshipNotice</a>

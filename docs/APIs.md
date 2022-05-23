@@ -577,7 +577,7 @@ from biblebot.api import IntranetAPI
 
 async def main():
     # Login
-    response = await IntranetAPI.Login.fetch("sunil1369", "qjacjf6775")
+    response = await IntranetAPI.Login.fetch("아이디", "패스워드")
     result = IntranetAPI.Login.parse(response)
     cookie = result.data["cookies"]
 
@@ -676,7 +676,7 @@ from biblebot.api import IntranetAPI
 
 async def main():
     # Login
-    response = await IntranetAPI.Login.fetch("sunil1369", "qjacjf6775")
+    response = await IntranetAPI.Login.fetch("아이디", "패스워드")
     result = IntranetAPI.Login.parse(response)
     cookie = result.data["cookies"]
 

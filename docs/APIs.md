@@ -14,6 +14,8 @@
     - <a href="#Intranet_Chapel" name="id1_2_3">class biblebot.IntranetAPI.Chapel</a>
     - <a href="#Intranet_Timetable" name="id1_2_4">class biblebot.IntranetAPI.Timetable</a>
     - <a href="#Intranet_Course" name="id1_2_5">class biblebot.IntranetAPI.Course</a>
+    - <a href="#Intranet_GraduationExam" name="id1_2_6">class biblebot.IntranetAPI.GraduationExam</a>
+    - <a href="#Intranet_TotalAcceptanceStatus" name="id1_2_7">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
   - <a href="#KBU" name="id1_3">KBU API</a>
     - <a href="#KBU_MainNotice" name="id1_3_1">class biblebot.KbuAPI.MainNotice</a>
     - <a href="#KBU_ScholarshipNotice" name="id1_3_2">class biblebot.KbuAPI.ScholarshipNotice</a>
@@ -536,6 +538,198 @@ def parse(cls, response: Response) -> APIResponseType:
 | semester  | 학기<br>2020학년도 1학기라면 `20201` 의 포맷으로 작성한다. |
 
 
+
+#### <a href="#id1_2_6" name="Intranet_GraduationExam">class biblebot.IntranetAPI.GraduationExam</a>
+
+> 졸업시험 합격 여부 정보를 가져오는 클래스
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    cookies: Dict[str, str],
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter | Description                                                |
+| --------- | ---------------------------------------------------------- |
+| cookies   | 로그인시 얻은 쿠키                                         |
+
+
+**Example:**
+
+```python
+import asyncio
+
+from biblebot.api import IntranetAPI
+
+
+async def main():
+    # Login
+    response = await IntranetAPI.Login.fetch("아이디", "패스워드")
+    result = IntranetAPI.Login.parse(response)
+    cookie = result.data["cookies"]
+
+    # Get TotalAcceptanceStatus
+    resp = await IntranetAPI.GraduationExam.fetch(cookies=cookie)
+    result = IntranetAPI.GraduationExam.parse(resp)
+    print(result)
+asyncio.run(main())
+```
+
+**Output:**
+
+```text
+
+ResourceData(
+    data={
+       "head":[
+          "번호",
+          "학년도 학기",
+          "시헙종목",
+          "신청기간",
+          "신청"
+       ],
+       "body":[
+          [
+             "1",
+             "2022 - 1",
+             "영어",
+             "2022-03-28 ~ 2022-04-07",
+             "합격자 신청 불가"
+          ],
+          [
+             "2",
+             "2022 - 1",
+             "성경",
+             "2022-05-02 ~ 2022-05-10",
+             ""
+          ],
+          [
+             "3",
+             "2022 - 1",
+             "컴퓨터",
+             "홈페이지 공지사항 참고",
+             "합격자 신청 불가"
+          ],
+          [
+             "4",
+             "2022 - 1",
+             "컴퓨터2",
+             "홈페이지 공지사항 참고",
+             ""
+          ]
+       ]
+    },
+    "link=""https://kbuis.bible.ac.kr/SchoolRegMng/SR050.aspx",
+    "meta="{}
+)
+```
+
+
+#### <a href="#id1_2_7" name="Intranet_TotalAcceptanceStatus">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
+
+> 전체 이수현황 정보를 가져오는 클래스
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    cookies: Dict[str, str],
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter | Description                                                |
+| --------- | ---------------------------------------------------------- |
+| cookies   | 로그인시 얻은 쿠키                                         |
+
+
+**Example:**
+
+```python
+import asyncio
+
+from biblebot.api import IntranetAPI
+
+
+async def main():
+    # Login
+    response = await IntranetAPI.Login.fetch("아이디", "패스워드")
+    result = IntranetAPI.Login.parse(response)
+    cookie = result.data["cookies"]
+
+    # Get TotalAcceptanceStatus
+    resp = await IntranetAPI.TotalAcceptanceStatus.fetch(cookies=cookie)
+    result = IntranetAPI.TotalAcceptanceStatus.parse(resp)
+    print(result)
+asyncio.run(main())
+```
+
+**Output:**
+
+```text
+ResourceData(
+   data={       
+       "summary":{
+          "신청학점":"115",
+          "이수학점":"115",
+          "평점평균":"3.29",
+          "백분율":"87.76"
+       },
+       "head":[
+          "이수과목",
+          "학점",
+          "등급",
+          "학년도학기"
+       ],
+       "body":{
+          "교양선택":[
+             [
+                "디지털사회의소통(GE669-A)",
+                "3",
+                "B+",
+                "20172"
+             ],
+             ...
+          ],
+          "교양필수":[
+             [
+                "경건훈련(GE264-A)",
+                "0",
+                "F ",
+                "20221"
+             ],
+             ...
+          ],
+          ...
+       }
+    },
+    "link=""https://kbuis.bible.ac.kr/GradeMng/GD010.aspx?viewRef=0",
+    "meta="{}
+)
+```        
 
 
 ### <a href="#id1_3" name="KBU">KBU API</a>

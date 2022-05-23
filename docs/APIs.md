@@ -14,6 +14,8 @@
     - <a href="#Intranet_Chapel" name="id1_2_3">class biblebot.IntranetAPI.Chapel</a>
     - <a href="#Intranet_Timetable" name="id1_2_4">class biblebot.IntranetAPI.Timetable</a>
     - <a href="#Intranet_Course" name="id1_2_5">class biblebot.IntranetAPI.Course</a>
+    - <a href="#Intranet_Course" name="id1_2_6">class biblebot.IntranetAPI.GraduationExam</a>
+    - <a href="#Intranet_Course" name="id1_2_7">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
   - <a href="#KBU" name="id1_3">KBU API</a>
     - <a href="#KBU_MainNotice" name="id1_3_1">class biblebot.KbuAPI.MainNotice</a>
     - <a href="#KBU_ScholarshipNotice" name="id1_3_2">class biblebot.KbuAPI.ScholarshipNotice</a>
@@ -537,7 +539,7 @@ def parse(cls, response: Response) -> APIResponseType:
 
 
 
-#### <a href="#id1_2_5" name="Intranet_Course">class biblebot.IntranetAPI.GraduationExam</a>
+#### <a href="#id1_2_6" name="Intranet_Course">class biblebot.IntranetAPI.GraduationExam</a>
 
 > 졸업시험 합격 여부 정보를 가져오는 클래스
 
@@ -566,7 +568,7 @@ def parse(cls, response: Response) -> APIResponseType:
 
 
 
-#### <a href="#id1_2_5" name="Intranet_Course">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
+#### <a href="#id1_2_7" name="Intranet_Course">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
 
 > 전체 이수현황 정보를 가져오는 클래스
 

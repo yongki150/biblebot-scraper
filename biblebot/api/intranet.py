@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Dict, List, Tuple
+from collections import defaultdict
 import re
 
 from .base import (
@@ -30,6 +31,7 @@ __all__ = (
     "Chapel",
     "Timetable",
     "Course",
+    "TotalAcceptanceStatus",
     "GraduationExam",
 )
 
@@ -389,8 +391,7 @@ class GraduationExam(IParser):
         return await HTTPClient.connector.get(
             cls.URL, cookies=cookies, headers=headers, timeout=timeout, **kwargs
         )
-
-    @classmethod
+    
     def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
         soup = response.soup
         thead = soup.find("thead", attrs={"class": "mhead"})
@@ -403,3 +404,77 @@ class GraduationExam(IParser):
     def parse(cls, response: Response) -> APIResponseType:
         head, body = cls._parse_main_table(response)
         return ResourceData(data={"head": head, "body": body}, link=response.url)
+
+      
+class TotalAcceptanceStatus(IParser):
+    URL: str = DOMAIN_NAME + "/GradeMng/GD010.aspx?viewRef=0"
+
+    @classmethod
+    async def fetch(
+        cls,
+        cookies: Dict[str, str],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            cls.URL, cookies=cookies, headers=headers, timeout=timeout, **kwargs
+        )
+    
+    @classmethod
+    def _parse_summary(cls, response: Response) -> Dict[str, str]:
+        soup = response.soup
+        table = soup.find("table", attrs={"class": "viewscore"})
+
+        summary: Dict[str, str] = {}
+
+        for td in table.find("tr").find_all('td'):
+            if td.get_text() == "\xa0 ":
+                continue
+            key, value = td.get_text()[1:].split(" : ")
+            summary[key] = value
+
+        return summary
+
+    @classmethod
+    def _parse_head(cls, response: Response) -> List:
+        soup = response.soup
+        tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        head = []
+
+        for i in range(3, 7):
+            head.append(tbody.find('tr').find_all('th')[i].get_text())
+
+        return head
+
+    @classmethod
+    def _parse_main_table(cls, response: Response) -> Dict[str, List]:
+        soup = response.soup
+        tbody = soup.find("tbody", attrs={"class": "viewbody"})
+        key = ''
+        courses_taken = defaultdict(list)
+
+        for tr in tbody.find_all('tr'):
+            division = []
+            if tr.find('th', attrs={"rowspan": ""}):
+                continue
+            if tr.find('th'):
+                key = tr.find('th').text
+            for td in tr.find_all('td'):
+                if td.get_text() == "":
+                    continue
+                division.append(td.get_text())
+            courses_taken[key].append(division)
+
+        return dict(courses_taken)
+      
+    @classmethod
+    @_ParserPrecondition
+    def parse(cls, response: Response) -> APIResponseType:
+        summary = cls._parse_summary(response)
+        head = cls._parse_head(response)
+        body = cls._parse_main_table(response)
+        return ResourceData(
+            data={"summary": summary, "head": head, "body": body},
+            link=response.url)

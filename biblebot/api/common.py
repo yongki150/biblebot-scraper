@@ -50,7 +50,6 @@ def extract_alerts(soup: BeautifulSoup) -> List[str]:
             alert = _replace_alert_message(message)
             if alert:
                 result.append(alert)
-
     return result
 
 

@@ -34,6 +34,9 @@ class Test(AsyncTestCase):
     USERNAME: str = ""
     PASSWORD: str = ""
 
+    # Assign later
+    SESSION_COOKIES: str = ""
+
     def setUp(self) -> None:
         print("\n")
 
@@ -44,17 +47,19 @@ class Test(AsyncTestCase):
     async def test_login_scraper(cls):
         response = await LibraryAPI.Login.fetch(cls.USERNAME, cls.PASSWORD)
         result = LibraryAPI.Login.parse(response)
-        cls.COOKIES = result.data["cookies"]
+        cls.SESSION_COOKIES = result.data["cookies"]
 
         print("로그인")
         pprint(result.data)
 
     @classmethod
     async def test_checkout_list_scraper(cls):
-        response = await LibraryAPI.Login.fetch(cls.USERNAME, cls.PASSWORD)
-        result = LibraryAPI.Login.parse(response)
+        if not cls.SESSION_COOKIES:
+            response = await LibraryAPI.Login.fetch(cls.USERNAME, cls.PASSWORD)
+            result = LibraryAPI.Login.parse(response)
+            cls.SESSION_COOKIES = result.data["cookies"]
 
-        response = await LibraryAPI.CheckoutList.fetch(result.data["cookies"])
+        response = await LibraryAPI.CheckoutList.fetch(cls.SESSION_COOKIES)
         result = LibraryAPI.CheckoutList.parse(response)
 
         print("대출 목록")
@@ -62,10 +67,12 @@ class Test(AsyncTestCase):
 
     @classmethod
     async def test_book_detail_scraper(cls):
-        response = await LibraryAPI.Login.fetch(cls.USERNAME, cls.PASSWORD)
-        result = LibraryAPI.Login.parse(response)
+        if not cls.SESSION_COOKIES:
+            response = await LibraryAPI.Login.fetch(cls.USERNAME, cls.PASSWORD)
+            result = LibraryAPI.Login.parse(response)
+            cls.SESSION_COOKIES = result.data["cookies"]
 
-        response = await LibraryAPI.CheckoutList.fetch(result.data["cookies"])
+        response = await LibraryAPI.CheckoutList.fetch(cls.SESSION_COOKIES)
         result = LibraryAPI.CheckoutList.parse(response)
 
         result.data["head"][0] = "ISBN"
@@ -105,10 +112,12 @@ class Test(AsyncTestCase):
 
     @classmethod
     async def test_book_photo_scraper(cls):
-        response = await LibraryAPI.Login.fetch(cls.USERNAME, cls.PASSWORD)
-        result = LibraryAPI.Login.parse(response)
+        if not cls.SESSION_COOKIES:
+            response = await LibraryAPI.Login.fetch(cls.USERNAME, cls.PASSWORD)
+            result = LibraryAPI.Login.parse(response)
+            cls.SESSION_COOKIES = result.data["cookies"]
 
-        response = await LibraryAPI.CheckoutList.fetch(result.data["cookies"])
+        response = await LibraryAPI.CheckoutList.fetch(cls.SESSION_COOKIES)
         result = LibraryAPI.CheckoutList.parse(response)
 
         result.data["head"][0] = "ISBN"

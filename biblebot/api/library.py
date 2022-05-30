@@ -32,7 +32,7 @@ __all__ = (
     "BookPhoto",
     "NewBookPath",
     "BookIntro",
-    "NewBookPathChange",
+    "NewBookPathAtHomePage",
 )
 
 DOMAIN_NAME: str = "https://lib.bible.ac.kr"
@@ -249,7 +249,7 @@ class BookIntro:
         return introduction
 
 
-class NewBookPathChange:
+class NewBookPathAtHomePage:
     @classmethod
     async def fetch(
         cls,

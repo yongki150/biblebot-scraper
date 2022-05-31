@@ -8,6 +8,7 @@ from .base import (
     IParser,
     APIResponseType,
     ILoginFetcher,
+    IGeneralFetcher,
     ISemesterFetcher,
     ResourceData,
     ErrorData,
@@ -479,3 +480,97 @@ class TotalAcceptanceStatus(IParser):
         return ResourceData(
             data={"summary": summary, "head": head, "body": body},
             link=response.url)
+
+class Profile(IGeneralFetcher, IParser):
+    URL: str = DOMAIN_NAME + "/SchoolRegMng/SR030.aspx"
+
+    @staticmethod
+    def validate_name(name: str) -> bool:
+        return bool(re.search(r"^[가-힣]{2,}$", name))
+
+    @staticmethod
+    def validate_sid(univ_id: str) -> bool:
+        return bool(re.search(r"^[a-zA-Z]{,1}\d{3,9}$", univ_id))
+
+    @staticmethod
+    def validate_major(major: str) -> bool:
+        return bool(re.search(r"^[가-힣]{3,17}$", major))
+
+    @classmethod
+    async def fetch(
+        cls,
+        cookies: Dict[str, str],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        timeout: Optional[float] = None,
+        **kwargs,
+    ) -> Response:
+        return await HTTPClient.connector.get(
+            cls.URL, headers=headers, cookies=cookies, timeout=timeout, **kwargs
+        )
+
+    @classmethod
+    def _parse_sid(cls, response: Response) -> str:
+        soup = response.soup
+        sid_tag = soup.find("span", attrs={"id": "ctl00_ContentPlaceHolder1_Lab_3"})
+        if not sid_tag:
+            raise ParsingError("학번을 탐색할 수 없습니다.", response)
+
+        sid: str = sid_tag.get_text(strip=True)
+        if not cls.validate_sid(sid):
+            raise ParsingError("올바르지 않은 학번입니다.", response)
+
+        return sid
+
+    @classmethod
+    def _parse_name(cls, response: Response) -> str:
+        soup = response.soup
+        name_tag = soup.find("span", attrs={"id": "ctl00_ContentPlaceHolder1_Lab_4"})
+        if not name_tag:
+            raise ParsingError("성명을 탐색할 수 없습니다.", response)
+
+        name = name_tag.get_text(strip=True)
+        if not cls.validate_name(name):
+            raise ParsingError("올바르지 않은 이름입니다.", response)
+
+        return name
+
+    @classmethod
+    def _parse_major(cls, response: Response) -> str:
+        soup = response.soup
+        major_tag = soup.find("span", attrs={"id": "ctl00_ContentPlaceHolder1_Lab_5"})
+        if not major_tag:
+            raise ParsingError("전공을 탐색할 수 없습니다.", soup.original_markup)
+
+        major = major_tag.get_text(strip=True)
+        if not cls.validate_major(major):
+            raise ParsingError("올바르지 않은 학과입니다.", response)
+
+        return major
+
+    @classmethod
+    @_ParserPrecondition
+    def parse_sid(cls, response: Response) -> APIResponseType:
+        return ResourceData(data={"sid": cls._parse_sid(response)}, link=response.url)
+
+    @classmethod
+    @_ParserPrecondition
+    def parse_name(cls, response: Response) -> APIResponseType:
+        return ResourceData(data={"name": cls._parse_name(response)}, link=response.url)
+
+    @classmethod
+    @_ParserPrecondition
+    def parse_major(cls, response: Response) -> APIResponseType:
+        return ResourceData(
+            data={"major": cls._parse_major(response)}, link=response.url
+        )
+
+    @classmethod
+    @_ParserPrecondition
+    def parse(cls, response: Response) -> APIResponseType:
+        sid = cls._parse_sid(response)
+        name = cls._parse_name(response)
+        major = cls._parse_major(response)
+        return ResourceData(
+            data={"sid": sid, "name": name, "major": major}, link=response.url
+        )

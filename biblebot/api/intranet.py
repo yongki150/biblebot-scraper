@@ -481,6 +481,7 @@ class TotalAcceptanceStatus(IParser):
             data={"summary": summary, "head": head, "body": body},
             link=response.url)
 
+
 class Profile(IGeneralFetcher, IParser):
     URL: str = DOMAIN_NAME + "/SchoolRegMng/SR030.aspx"
 

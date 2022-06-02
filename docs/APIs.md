@@ -16,6 +16,7 @@
     - <a href="#Intranet_Course" name="id1_2_5">class biblebot.IntranetAPI.Course</a>
     - <a href="#Intranet_GraduationExam" name="id1_2_6">class biblebot.IntranetAPI.GraduationExam</a>
     - <a href="#Intranet_TotalAcceptanceStatus" name="id1_2_7">class biblebot.IntranetAPI.TotalAcceptanceStatus</a>
+    - <a href="#Intranet_Profile" name="id1_2_8">class biblebot.IntranetAPI.Profile</a>
   - <a href="#KBU" name="id1_3">KBU API</a>
     - <a href="#KBU_MainNotice" name="id1_3_1">class biblebot.KbuAPI.MainNotice</a>
     - <a href="#KBU_ScholarshipNotice" name="id1_3_2">class biblebot.KbuAPI.ScholarshipNotice</a>
@@ -730,6 +731,78 @@ ResourceData(
     "meta="{}
 )
 ```        
+
+
+#### <a href="#id1_2_8" name="Intranet_Profile">class biblebot.Intranet.Profile</a>
+
+> Intranet 에서 사용자 프로필(학번, 이름, 학과)을 가져오는 클래스
+
+모든 프로필 정보를 가져오려면 `parse` 클래스 메서드를 사용하고, 부분적으로 필요할 경우, `parse_sid`, `parse_name`, `parse_major` 클래스 메서드 중 하나를 선택하여 사용하세요.
+
+**Method:**
+
+```python
+@classmethod
+async def fetch(
+    cls,
+    cookies: Dict[str, str],
+    *,
+    headers: Optional[Dict[str, str]] = None,
+    timeout: Optional[float] = None,
+    **kwargs,
+) -> Response:
+    ...
+    
+@classmethod
+def parse_sid(cls, response: Response) -> APIResponseType:
+    ...
+    
+@classmethod
+def parse_name(cls, response: Response) -> APIResponseType:
+    ...
+    
+@classmethod
+def parse_major(cls, response: Response) -> APIResponseType:
+    ...
+    
+@classmethod
+def parse(cls, response: Response) -> APIResponseType:
+    ...
+```
+
+| Parameter | Description        |
+| :-------- | ------------------ |
+| cookies   | 로그인시 얻은 쿠키 |
+
+
+**Example:**
+
+```python
+import asyncio
+
+from biblebot.api import IntranetAPI
+
+
+async def main():
+    # Login
+    response = await IntranetAPI.Login.fetch("아이디", "비밀번호")
+    result = IntranetAPI.Login.parse(response)
+    cookie = result.data["cookies"]
+
+    # Get Profile
+    resp = await IntranetAPI.Profile.fetch(cookies=cookie)
+    result = IntranetAPI.Profile.parse(resp)
+    print(result)
+    
+asyncio.run(main())
+```
+
+**Output:**
+
+```text
+ResourceData(data={'sid': '201704036', 'name': '신범철', 'major': '컴퓨터소프트웨어학과'}, link='https://kbuis.bible.ac.kr/SchoolRegMng/SR030.aspx', meta={})
+```
+
 
 
 ### <a href="#id1_3" name="KBU">KBU API</a>

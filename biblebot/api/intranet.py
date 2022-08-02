@@ -396,16 +396,16 @@ class GraduationExam(IParser):
     @classmethod
     def _parse_main_table(cls, response: Response) -> Tuple[List, List]:
         soup = response.soup
-        thead = soup.find("thead", attrs={"class": "mhead"})
-        tbody = soup.find("tbody", attrs={"class": "mbody"})
+        thead = soup.select_one('td > table > thead.mhead')
+        tbody = soup.select_one('td > table > tbody.mbody')
 
         return parse_table(response, thead, tbody)
 
     @classmethod
     @_ParserPrecondition
     def parse(cls, response: Response) -> APIResponseType:
-        head, body = cls._parse_main_table(response)
-        return ResourceData(data={"head": head, "body": body}, link=response.url)
+        thead, body = cls._parse_main_table(response)
+        return ResourceData(data={"head": thead, "body": body}, link=response.url)
 
       
 class TotalAcceptanceStatus(IParser):

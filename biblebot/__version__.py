@@ -17,5 +17,5 @@ __version__ = "0.4.1"
 __author__ = "Kyungmin Lee"
 __author_email__ = "rekyungmin@gmail.com"
 __license__ = "MIT"
-__copyright__ = "Copyright 2022 Kyungmin Lee"
+__copyright__ = "Copyright 2023 Kyungmin Lee"
 __contributors__ = "Yongki Kim <ygflove@likelion.org>",

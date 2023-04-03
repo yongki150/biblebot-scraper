@@ -6,7 +6,7 @@
 
 성서봇 스크래이퍼는 한국성서대학교와 연관된 정보를 수집할 수 있는 파이썬 패키지입니다.
 
-이 패키지를 바탕으로, **성서봇** 모바일 애플리케이션([Android](https://play.google.com/store/apps/details?id=com.blogspot.ramming125.kbubot&hl=ko) / [IOS](https://apps.apple.com/kr/app/성서봇/id1441276020))이 한국성서대학교학생들에게 2018년부터 실서비스 되고 있습니다.  
+이 패키지를 바탕으로, **성서봇** 모바일 애플리케이션([Android](https://play.google.com/store/apps/details?id=com.blogspot.ramming125.kbubot&hl=ko))이 한국성서대학교학생들에게 2018년부터 실서비스 되고 있습니다.
 
 이 패키지는 다섯 가지 웹사이트에 대한 스크래이퍼를 제공합니다.
 
